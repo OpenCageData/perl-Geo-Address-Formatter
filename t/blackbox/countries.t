@@ -20,6 +20,7 @@ binmode $builder->todo_output,    ":utf8";
 
 
 my $path = dirname(__FILE__) . '/../../../address-formatting/testcases/';
+ok(1);
 
 if ( -d $path ){
 
