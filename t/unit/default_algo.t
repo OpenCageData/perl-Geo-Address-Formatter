@@ -2,12 +2,15 @@ use strict;
 use lib 'lib';
 use feature qw(say);
 use Test::More;
+use File::Basename qw(dirname);
 use Data::Dumper;
 use utf8;
 
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
-my $GAF = $CLASS->new();
+
+my $path = dirname(__FILE__) . '/test_conf1';
+my $GAF = $CLASS->new( conf_path => $path );
 
 
 #y $rh_components = {

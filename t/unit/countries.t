@@ -4,7 +4,7 @@ use feature qw(say);
 use Test::More;
 use Test::Exception;
 use Data::Dumper;
-use File::Basename;
+use File::Basename qw(basename dirname);
 use File::Spec;
 use File::Find::Rule;
 use File::Slurp;
@@ -19,8 +19,7 @@ binmode $builder->failure_output, ":utf8";
 binmode $builder->todo_output,    ":utf8";
 
 
-# my $path = dirname(__FILE__) . '/../../../address-formatting/testcases';
-my $path = dirname(__FILE__) . '/../test_setup/testcases';
+my $path = dirname(__FILE__) . '/testcases1';
 
 my @files = File::Find::Rule->file()->name( '*.yaml' )->in( $path );
 
@@ -28,7 +27,9 @@ ok(scalar(@files), 'found at least one file');
 
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
-my $GAF = $CLASS->new();
+
+my $conf_path = dirname(__FILE__) . '/test_conf1';
+my $GAF = $CLASS->new( conf_path => $conf_path );
 
 
 

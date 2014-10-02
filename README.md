@@ -7,7 +7,12 @@ global/country rules.
 It is meant to run against a set of configuration and test cases in
 https://github.com/lokku/address-formatting
 
-	
+The address-formatting repository is added as a submodule. It is versioned, that means
+it won't automatically update when you run 'git pull'. To point it to a newer version
+of the configuration run 'git submodule update'
+http://git-scm.com/book/en/Git-Tools-Submodules
+
+
 
 DEVELOPMENT
 

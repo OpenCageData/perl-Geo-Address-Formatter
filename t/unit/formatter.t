@@ -3,11 +3,14 @@ use lib 'lib';
 use Test::More;
 use Test::Warn;
 use Clone qw(clone);
+use File::Basename qw(dirname);
 use Data::Dumper;
 
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
-my $GAF = $CLASS->new();
+
+my $path = dirname(__FILE__) . '/test_conf1';
+my $GAF = $CLASS->new( conf_path => $path );
 
 {
   is(
