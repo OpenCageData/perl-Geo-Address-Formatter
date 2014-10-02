@@ -22,9 +22,7 @@ binmode $builder->todo_output,    ":utf8";
 # my $path = dirname(__FILE__) . '/../../../address-formatting/testcases';
 my $path = dirname(__FILE__) . '/../test_setup/testcases';
 
-my @files = File::Find::Rule->file()
-							->name( '*.yaml' )
-							->in( $path );
+my @files = File::Find::Rule->file()->name( '*.yaml' )->in( $path );
 
 ok(scalar(@files), 'found at least one file');
 
@@ -35,29 +33,29 @@ my $GAF = $CLASS->new();
 
 
 sub _one_testcase {
-	my $country    = shift;
-	my $rh_testcase = shift;
-	is(
-		$GAF->format_address($rh_testcase->{components}),
-		$rh_testcase->{expected},
-		$country . ' - ' . $rh_testcase->{description}
-	);
+  my $country    = shift;
+  my $rh_testcase = shift;
+  is(
+    $GAF->format_address($rh_testcase->{components}),
+    $rh_testcase->{expected},
+    $country . ' - ' . $rh_testcase->{description}
+  );
 }
 
 
 
 foreach my $filename (@files){
-	my $country = basename($filename);
-	$country =~ s/\.\w+$//; # us.yaml => us
+  my $country = basename($filename);
+  $country =~ s/\.\w+$//; # us.yaml => us
 
-	my @a_testcases = ();
-	lives_ok {
-		@a_testcases = LoadFile($filename);
-	} "parsing file $filename";
+  my @a_testcases = ();
+  lives_ok {
+    @a_testcases = LoadFile($filename);
+  } "parsing file $filename";
 
-	foreach my $rh_testcase (@a_testcases){
-		_one_testcase($country, $rh_testcase);
-	}
+  foreach my $rh_testcase (@a_testcases){
+    _one_testcase($country, $rh_testcase);
+  }
 }
 
 

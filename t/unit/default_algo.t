@@ -11,19 +11,19 @@ my $GAF = $CLASS->new();
 
 
 #y $rh_components = {
-#           "bank" => "Commerzbank",
-#           "city" => "Münster",
-#           "city_district" => "Münster-Mitte",
-#           "country" => "Germany",
-#           "country_code" => "de",
-#           "county" => "Münster",
-#           "house_number" => 52,
-#           "neighbourhood" => "Josef",
-#           "postcode" => 48153,
-#           "road" => "Hammer Straße",
-#           "state" => "North Rhine-Westphalia",
-#           "state_district" => "Regierungsbezirk Münster",
-#           "suburb" => "Innenstadtring"
+#     "bank" => "Commerzbank",
+#     "city" => "Münster",
+#     "city_district" => "Münster-Mitte",
+#     "country" => "Germany",
+#     "country_code" => "de",
+#     "county" => "Münster",
+#     "house_number" => 52,
+#     "neighbourhood" => "Josef",
+#     "postcode" => 48153,
+#     "road" => "Hammer Straße",
+#     "state" => "North Rhine-Westphalia",
+#     "state_district" => "Regierungsbezirk Münster",
+#     "suburb" => "Innenstadtring"
 #};
 
 #is(
@@ -34,15 +34,15 @@ my $GAF = $CLASS->new();
 
 
 my $rh_components = {
-            "one" => "ONE",
-            "two" => "TWO",
-            "three" => "THREE",
-            "four" => "FOUR",
+    "one" => "ONE",
+    "two" => "TWO",
+    "three" => "THREE",
+    "four" => "FOUR",
  };
 
 is(
-      $GAF->_clean( $GAF->_default_algo($rh_components) ), 
-      'FOUR, ONE, TWO, THREE'
+  $GAF->_clean( $GAF->_default_algo($rh_components) ), 
+  'FOUR, ONE, TWO, THREE'
 );
 
 
