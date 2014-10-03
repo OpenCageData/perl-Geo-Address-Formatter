@@ -18,13 +18,15 @@ binmode $builder->output,         ":utf8";
 binmode $builder->failure_output, ":utf8";
 binmode $builder->todo_output,    ":utf8";
 
+my $af_path = dirname(__FILE__) . '/../../address-formatting';
 
-my $path = dirname(__FILE__) . '/../../../address-formatting/testcases/';
+my $path = $af_path . '/testcases/';
 ok(1);
+
 
 if ( -d $path ){
 
-  my $path2 = dirname(__FILE__) . '/../../../address-formatting/conf/';
+  my $path2 = $af_path . '/conf/';
 
   my @files = File::Find::Rule->file()->name( '*.yaml' )->in( $path );
 
