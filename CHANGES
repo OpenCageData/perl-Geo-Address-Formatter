@@ -1,5 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.1     2014-10-03
+        - improved POD
+
 1.1     2014-10-02
         - add address-formatting repository as submodule to allow running
             (blackbox) tests against its configuration and test cases.
