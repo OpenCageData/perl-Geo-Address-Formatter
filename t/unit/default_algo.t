@@ -2,6 +2,7 @@ use strict;
 use lib 'lib';
 use feature qw(say);
 use Test::More;
+use Test::Warn;
 use File::Basename qw(dirname);
 use Data::Dumper;
 use utf8;
@@ -43,10 +44,11 @@ my $rh_components = {
     "four" => "FOUR",
  };
 
-is(
-  $GAF->_clean( $GAF->_default_algo($rh_components) ), 
-  'FOUR, ONE, TWO, THREE'
-);
-
+warning_like {
+  is(
+    $GAF->_clean( $GAF->_default_algo($rh_components) ), 
+    'FOUR, ONE, TWO, THREE'
+  );
+} qr/not sure where to put this/, 'got warning';
 
 done_testing();
