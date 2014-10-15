@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.2.2   2014-10-15
+        - use fallback template if not enough address components, for example
+          "Moabit, Berlin"
+
 1.2.1   2014-10-03
         - more docs
         - fixed path in test
