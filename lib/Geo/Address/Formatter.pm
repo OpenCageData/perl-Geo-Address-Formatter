@@ -82,6 +82,8 @@ sub _read_configuration {
     my @a_filenames = 
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/countries');
 
+    # FIXME - not sure about this logic
+    # seems like it will overwrite $self->{templates} if multiple files found
     foreach my $filename ( @a_filenames ){
         try {
             $self->{templates} = LoadFile($filename);
@@ -116,7 +118,6 @@ sub _read_configuration {
     return;
 }
 
-
 =head2 format_address
 
   my $text = $GAF->format_address(\%components, \%options );
@@ -132,23 +133,50 @@ If ommited we try to find the country in the address components.
 
 sub format_address {
     my $self       = shift;
-    my $components = clone(shift) || return;
+    my $rh_components = clone(shift) || return;
     my $rh_options = shift || {};
 
     my $cc = $rh_options->{country} 
-            || $self->_determine_country_code($components) 
+            || $self->_determine_country_code($rh_components) 
             || '';
 
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
 
-    $self->_apply_replacements($components, $rh_config->{replace});
-    $self->_add_state_code($components);
-    $components->{attention} = join(', ', map { $components->{$_} } @{ $self->_find_unknown_components($components)} );
+    #print STDERR "t text " . Dumper $template_text;
+    #print STDERR "comp " . Dumper $rh_components;
 
-    my $text = $self->_render_template($template_text, $components);
+    # do we have the minimal components for an address?
+    # or should we instead fall back?
+    $self->_apply_replacements($rh_components, $rh_config->{replace});
+    $self->_add_state_code($rh_components);
+
+    if (!$self->_minimal_components($rh_components)){
+        $template_text = 
+            $rh_config->{fallback_template}
+            || $self->{templates}{default}{fallback_template}
+            || $rh_config->{address_template};  # if there is no fallback
+    }
+
+    $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @{ $self->_find_unknown_components($rh_components)} );
+
+    my $text = $self->_render_template($template_text, $rh_components);
     $text = $self->_clean($text);
     return $text;
+}
+
+sub _minimal_components {
+    my $self = shift;
+    my $rh_components = shift || return;
+    my @required_components = qw(road postcode);
+    my $missing = 0;  # number of required components missing
+  
+    my $minimal_threshold = 2;
+    foreach my $c (@required_components){
+        $missing++ if (!defined($rh_components->{$c}));
+        return 0 if ($missing == $minimal_threshold);
+    }
+    return 1;
 }
 
 sub _determine_country_code {
