@@ -25,16 +25,17 @@ For example, you have:
 
   {
     house_number => 12,
-    street => 'Some street',
+    street => 'Avenue Road',
     postcode => 45678,
-    city => 'Nirvana'
+    city => 'Deville'
   }
 
 you need:
 
-  Great Britain: Some street 12, Nirvana 45678  
-  France: 12 Some street, 45678 Nirvana
-  Germany: Some street 12, 45678 Nirvana
+  Great Britain: 12 Avenue Road, Deville 45678  
+  France: 12 Avenue Road, 45678 Deville
+  Germany: Avenue Road 12, 45678 Deville
+  Latvia: Avenue Road 12, Deville, 45678
 
 It gets more complicated with 100 countries and dozens more address
 components to consider.
@@ -82,17 +83,22 @@ sub _read_configuration {
     my @a_filenames = 
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/countries');
 
-    # FIXME - not sure about this logic
-    # seems like it will overwrite $self->{templates} if multiple files found
-    foreach my $filename ( @a_filenames ){
+    $self->{templates} = {};
+    foreach my $filename ( sort @a_filenames ){
         try {
-            $self->{templates} = LoadFile($filename);
+            my $rh_templates = LoadFile($filename);
+
+            # if file 00-default.yaml defines 'DE' (Germany) and
+            # file 01-germany.yaml does as well, then the second
+            # occurance of the key overwrites the first.
+            foreach ( keys %$rh_templates ){
+                $self->{templates}{$_} = $rh_templates->{$_};
+            }
         }
         catch {
             warn "error parsing country configuration in $filename: $_";
         };
     }
-    # warn Dumper \@files;
 
     try {
         my @c = LoadFile($path . '/components.yaml');
@@ -126,7 +132,7 @@ Given a structures address (hashref) and options (hashref) returns a
 formatted address.
 
 The only option you can set currently is 'country' which should
-be an uppercase ISO_3166-1_alpha-2 code, e.g. 'UK' for Great Britain.
+be an uppercase ISO 3166-1 alpha-2 code, e.g. 'GB' for Great Britain.
 If ommited we try to find the country in the address components.
 
 =cut
