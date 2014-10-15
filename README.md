@@ -30,7 +30,7 @@ DEVELOPMENT
 	dzil clean
 
 	# running the test-suite
-	TEST_AUTHOR=1 PERLLIB=./lib prove -r t/
+        dzil test --author
 
 	dzil build
 
