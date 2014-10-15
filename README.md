@@ -26,7 +26,6 @@ address-formatting repository, this module just processes the templates
 DEVELOPMENT
 
         # first install Dist::Zilla
-
 	dzil clean
 
 	# running the test-suite
