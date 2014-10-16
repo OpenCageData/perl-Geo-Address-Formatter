@@ -5,13 +5,13 @@ package Geo::Address::Formatter;
 use strict;
 use warnings;
 
-use Mustache::Simple;
-use Try::Tiny;
 use Clone qw(clone);
+use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Find::Rule;
 use List::Util qw(first);
-use Data::Dumper;
+use Mustache::Simple;
+use Try::Tiny;
 use YAML qw(Load LoadFile);
 
 my $tache = Mustache::Simple->new;
@@ -110,6 +110,8 @@ sub _read_configuration {
         warn "error parsing component configuration: $_";
     };
 
+    #print STDERR Dumper $self->{ordered_components};
+
     $self->{state_codes} = {};
     if ( -e $path . '/state_codes.yaml'){
         try {
@@ -174,7 +176,7 @@ sub format_address {
 sub _minimal_components {
     my $self = shift;
     my $rh_components = shift || return;
-    my @required_components = qw(road postcode);
+    my @required_components = qw(road postcode); #FIXME - should be in conf
     my $missing = 0;  # number of required components missing
   
     my $minimal_threshold = 2;
@@ -250,6 +252,8 @@ sub _clean {
     $out =~ s/\s+,\s+/, /g; # one space behind comma
 
     $out =~ s/\s\s+/ /g; # multiple whitespace to one
+    $out =~ s/,,+/,/g; # multiple commas to one
+
     $out =~ s/^\s+//;
     $out =~ s/\s+$//;
     return $out;
@@ -289,7 +293,7 @@ sub _find_unknown_components {
     return \@a_unknown;
 }
 
-sub _default_algo {
+sub _default_algo { # the ultimate fallback
     my $self = shift;
     my $cs = shift || return;
 
@@ -304,7 +308,6 @@ sub _default_algo {
     foreach my $k (@{ $self->{ordered_components} }){
         next unless ( exists($cs->{$k}) );
         next if ( $k eq 'country_code' && $cs->{'country'} );
-
         push(@values, $cs->{$k});
     }
 
