@@ -59,6 +59,18 @@ if ( -d $path ){
       @a_testcases = LoadFile($filename);
     } "parsing file $filename";
 
+    {
+      my $text = read_file($filename);
+
+      ## example "Stauffenstra\u00dfe" which should be "Stauffenstraße"
+      if ( $text =~ /\\u00/ ){
+        unlike(
+          $text,
+          qr!\\u00!,
+          'please don\'t use Javascript utf8 encoding, use characters directly'
+        );
+      }
+    }
     foreach my $rh_testcase (@a_testcases){
       _one_testcase($country, $rh_testcase);
     }
