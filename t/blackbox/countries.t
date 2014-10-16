@@ -36,19 +36,17 @@ if ( -d $path ){
   use_ok($CLASS);
   my $GAF = $CLASS->new( conf_path => $path2 );
 
-
-
   sub _one_testcase {
     my $country    = shift;
+    #next if ($country ne 'de');
     my $rh_testcase = shift;
+    #next if ($rh_testcase->{expected} !~ m/Köln/);
     is(
       $GAF->format_address($rh_testcase->{components}),
       $rh_testcase->{expected},
       $country . ' - ' . $rh_testcase->{description}
     );
   }
-
-
 
   foreach my $filename (@files){
     my $country = basename($filename);
