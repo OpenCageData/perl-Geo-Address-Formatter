@@ -1,12 +1,21 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.2.4   2014-10-17
+        - support postformat_replace
+        - actually use component aliases
+        - internal cleanup / delete unused code
+
 1.2.3   2014-10-15
-		- cleanup readme file
-		- better merging of template configuration when reading multiple files
-		   (currently it's only one file)
-		- corrected examples in POD [ticket 99517, thanks TOBYINK]
-		- disable Perl critics 'use strict' policy because it conflicts with
-			dzil automatic addition of version numbers into .pm files (PkgVersion)
+        - cleanup readme file
+
+	- better merging of template configuration when reading
+        multiple files (currently it's only one file)
+
+        - corrected examples in POD [ticket 99517, thanks TOBYINK]
+
+	- disable Perl critics 'use strict' policy because it
+        conflicts with dzil automatic addition of version numbers into
+        .pm files (PkgVersion)
 
 1.2.2   2014-10-15
         - use fallback template if not enough address components, for example
