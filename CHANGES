@@ -1,5 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.2.5   2014-10-19
+        - warning if a YAML config file contains a TAB character
+
 1.2.4   2014-10-17
         - support postformat_replace
         - actually use component aliases

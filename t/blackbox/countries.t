@@ -61,11 +61,19 @@ if ( -d $path ){
       my $text = read_file($filename);
 
       ## example "Stauffenstra\u00dfe" which should be "Stauffenstraße"
-      if ( $text =~ /\\u00/ ){
+      if ( $text =~ m/\\u00/ ){
         unlike(
           $text,
           qr!\\u00!,
           'please don\'t use Javascript utf8 encoding, use characters directly'
+        );
+      }
+
+      if ( $text =~ m/\t/ ){
+        unlike(
+          $text,
+          qr/\t/,
+          'there is a TAB in the YAML file. That will cause parsing errors'
         );
       }
     }
