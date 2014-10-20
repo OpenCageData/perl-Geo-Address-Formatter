@@ -60,7 +60,7 @@ if ( -d $path ){
         my $country = basename($filename);
         $country =~ s/\.\w+$//; # us.yaml => us
 
-        if (defined($input_country)){
+        if (defined($input_country) && $input_country){
             if ($country ne $input_country){
                 warn "skipping $country tests";     
                 next;
