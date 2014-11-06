@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.2.7   2014-11-06
+        - dedupe repeated chunks (ie "Kilkenny, Kilkenny" -> "Kilkenny")
+        - better tests, newest address templates
+
 1.2.6   2014-10-20
         - deal better with fallback cases
         - better tests, newest address templates
