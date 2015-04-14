@@ -20,7 +20,7 @@ To fetch the latest templates available use
 See also: <http://git-scm.com/book/en/Git-Tools-Submodules>
 
 To submit new countries/territories please see the details in the
-[address-formatting repository](https://github.com/lokku/address-formatting), this module just processes the templates
+[address-formatting repository](https://github.com/opencagedata/address-formatting), this module just processes the templates
 
 ### DEVELOPMENT
 
@@ -39,7 +39,7 @@ To submit new countries/territories please see the details in the
 
 ### COPYRIGHT AND LICENCE
 
-Copyright 2014 Lokku Ltd <cpan@lokku.com>
+Copyright 2015 Lokku Ltd <cpan@lokku.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10 or,

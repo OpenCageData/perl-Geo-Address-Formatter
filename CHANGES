@@ -1,5 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.2.8   2015-04-14
+        - github URL (organization) changed
+
 1.2.7   2014-11-06
         - dedupe repeated chunks (ie "Kilkenny, Kilkenny" -> "Kilkenny")
         - better tests, newest address templates
