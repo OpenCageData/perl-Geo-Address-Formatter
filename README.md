@@ -4,7 +4,7 @@ Perl CPAN module to take structured address data and format it
 according to the various global/country rules.
 
 It is meant to run against a set of configuration and test cases in
-<https://github.com/lokku/address-formatting>
+<https://github.com/opencagedata/address-formatting>
 
 The address-formatting repository is added as a [git submodule](http://git-scm.com/book/en/Git-Tools-Submodules). It is
 versioned, that means it won't automatically update when you run `git
@@ -39,7 +39,7 @@ To submit new countries/territories please see the details in the
 
 ### COPYRIGHT AND LICENCE
 
-Copyright 2015 Lokku Ltd <cpan@lokku.com>
+Copyright 2015 Opencage Data Ltd <cpan@opencagedata.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10 or,
