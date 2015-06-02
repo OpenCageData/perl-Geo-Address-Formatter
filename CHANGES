@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+
+1.2.9   2015-06-02
+        - require older version of Mustache::Simple. The latest version has
+           been broken for several months now
+
 1.2.8   2015-04-14
         - github URL (organization) changed
 
