@@ -15,6 +15,7 @@ use Try::Tiny;
 use YAML qw(Load LoadFile);
 
 my $THC = Text::Hogan::Compiler->new;
+my %THT_cache; # a place to store Text::Hogan::Template objects
 
 =head1 DESCRIPTION
 
@@ -102,7 +103,6 @@ sub _read_configuration {
         };
     }
 
-
     try {
         my @c = LoadFile($path . '/components.yaml');
 
@@ -182,6 +182,7 @@ sub format_address {
         }
         # no fallback
     }
+    $template_text =~ s/\n/, /sg;
 
     #print STDERR "t text " . Dumper $template_text;
 
@@ -194,10 +195,17 @@ sub format_address {
     if (scalar(@$ra_unknown)){
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
+    # warn Dumper $rh_components;
 
-    #warn Dumper $rh_components;
+
+    # get a compiled template
+    if (!defined($THT_cache{$template_text})){
+        $THT_cache{$template_text} = $THC->compile($template_text, {'numeric_string_as_string' => 1});
+    } 
+    my $compiled_template = $THT_cache{$template_text};
+
     # render it
-    my $text = $self->_render_template($template_text, $rh_components);
+    my $text = $self->_render_template($compiled_template, $rh_components);
     $text = $self->_postformat($text,$rh_config->{postformat_replace});
     $text = $self->_clean($text);
     return $text;
@@ -321,9 +329,9 @@ sub _clean {
 }
 
 sub _render_template {
-    my $self             = shift;
-    my $template_content = shift;
-    my $components       = shift;
+    my $self       = shift;
+    my $THTemplate = shift;
+    my $components = shift;
 
     # Mustache calls it context
     my $context = clone($components);
@@ -333,14 +341,13 @@ sub _render_template {
         my $selected = first { length($_) } split(/\s*\|\|\s*/, $newtext);
         return $selected;
     };
-
-    $template_content =~ s/\n/, /sg;
-    my $output = $THC->compile($template_content, {'numeric_string_as_string' => 1})->render($context);
+    
+    my $output = $THTemplate->render($context);
     $output = $self->_clean($output);
 
     # is it empty?
     if ($output !~ m/\w/){
-        my @comps =  keys %$components;
+        my @comps = keys %$components;
         if (scalar(@comps) == 1){  
             foreach my $k (@comps){
                 $output = $components->{$k};

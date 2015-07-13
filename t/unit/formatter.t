@@ -5,6 +5,7 @@ use Test::Warn;
 use Clone qw(clone);
 use File::Basename qw(dirname);
 use Data::Dumper;
+use Text::Hogan::Compiler;
 
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
@@ -84,10 +85,10 @@ my $GAF = $CLASS->new( conf_path => $path );
 
 
 {
-  my $template = 
+  my $THT = Text::Hogan::Compiler->new->compile('abc {{#first}} {{one}} || {{two}} {{/first}} def');
   is(
     $GAF->_render_template(
-        'abc {{#first}} {{one}} || {{two}} {{/first}} def',
+        $THT,
         { two => 2 }
       ),
     'abc 2 def',
