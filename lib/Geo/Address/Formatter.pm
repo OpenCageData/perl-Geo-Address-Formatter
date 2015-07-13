@@ -10,11 +10,11 @@ use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Find::Rule;
 use List::Util qw(first);
-use Mustache::Simple;
+use Text::Hogan::Compiler;
 use Try::Tiny;
 use YAML qw(Load LoadFile);
 
-my $tache = Mustache::Simple->new;
+my $THC = Text::Hogan::Compiler->new;
 
 =head1 DESCRIPTION
 
@@ -102,6 +102,7 @@ sub _read_configuration {
         };
     }
 
+
     try {
         my @c = LoadFile($path . '/components.yaml');
 
@@ -169,7 +170,6 @@ sub format_address {
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
 
-    #print STDERR "t text " . Dumper $template_text;
     #print STDERR "comp " . Dumper $rh_components;
     # do we have the minimal components for an address?
     # or should we instead use the fallback template?
@@ -306,7 +306,7 @@ sub _apply_replacements {
 sub _clean {
     my $self = shift;
     my $out  = shift // '';
-    $out =~ s/[,\s]+$//;
+    $out =~ s/[\},\s]+$//;
     $out =~ s/^[,\s]+//;
 
     $out =~ s/,\s*,/, /g; # multiple commas to one   
@@ -327,22 +327,22 @@ sub _render_template {
 
     # Mustache calls it context
     my $context = clone($components);
-
     $context->{first} = sub {
         my $text = shift;
-        $text = $tache->render($text, $components);
-        my $selected = first { length($_) } split(/\s*\|\|\s*/, $text);
+        my $newtext = $THC->compile($text, {'numeric_string_as_string' => 1})->render($components);
+        my $selected = first { length($_) } split(/\s*\|\|\s*/, $newtext);
         return $selected;
     };
+
     $template_content =~ s/\n/, /sg;
-    my $output = $tache->render($template_content, $context);
+    my $output = $THC->compile($template_content, {'numeric_string_as_string' => 1})->render($context);
     $output = $self->_clean($output);
 
     # is it empty?
     if ($output !~ m/\w/){
-        my $num_components = scalar(keys %$components);
-        if ($num_components == 1){  
-            foreach my $k (keys %$components){
+        my @comps =  keys %$components;
+        if (scalar(@comps) == 1){  
+            foreach my $k (@comps){
                 $output = $components->{$k};
             }
         } # FIXME what if more than one?
