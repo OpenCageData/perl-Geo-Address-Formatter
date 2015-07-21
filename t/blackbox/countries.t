@@ -27,7 +27,9 @@ my $input_country;
 GetOptions ( 
     'country:s'  => \$input_country,
 );
-$input_country = lc($input_country);
+if ( $input_country ){
+  $input_country = lc($input_country);
+}
 
 ok(1);
 
