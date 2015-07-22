@@ -10,6 +10,7 @@ use Data::Dumper;
 use File::Basename qw(dirname);
 use File::Find::Rule;
 use List::Util qw(first);
+use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
 use Try::Tiny;
 use YAML qw(Load LoadFile);
@@ -158,14 +159,21 @@ sub format_address {
             || $self->_determine_country_code($rh_components) 
             || '';
 
-    # set the aliases
+    #warn Dumper $rh_components;
+
+    # set the aliases, unless this would overwrite something
     foreach my $alias (keys %{$self->{component_aliases}}){
-        if (defined($rh_components->{$alias})){     
+
+        if (defined($rh_components->{$alias})
+            && !defined($rh_components->{$self->{component_aliases}->{$alias}})
+        ){     
+            #warn "writing $alias";
             $rh_components->{$self->{component_aliases}->{$alias}} = 
                 $rh_components->{$alias};
         }
     }
-
+    #warn "after setting aliases":
+    #warn Dumper $rh_components;
     # determine the template
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
@@ -187,6 +195,7 @@ sub format_address {
     #print STDERR "t text " . Dumper $template_text;
 
     # clean up the components
+    $self->_fix_country($rh_components);
     $self->_apply_replacements($rh_components, $rh_config->{replace});
     $self->_add_state_code($rh_components);
 
@@ -196,7 +205,6 @@ sub format_address {
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
     # warn Dumper $rh_components;
-
 
     # get a compiled template
     if (!defined($THT_cache{$template_text})){
@@ -257,11 +265,11 @@ sub _minimal_components {
 }
 
 sub _determine_country_code {
-    my $self       = shift;
-    my $components = shift || return;
+    my $self          = shift;
+    my $rh_components = shift || return;
 
     # FIXME - validate it is a valid country
-    if (my $cc = $components->{country_code} ){
+    if (my $cc = $rh_components->{country_code} ){
         return if ( $cc !~ m/^[a-z][a-z]$/i);
         return 'GB' if ($cc =~ /uk/i);
         return uc($cc);
@@ -270,44 +278,66 @@ sub _determine_country_code {
 }
 
 # sets and returns a state code
+sub _fix_country {
+    my $self          = shift;
+    my $rh_components = shift || return;
+
+    #warn Dumper $rh_components;
+    # is the country a number?
+    # if so, and there is a state, use state as country
+    if (defined($rh_components->{country})){
+	if (defined($rh_components->{state}) ){
+            if (looks_like_number($rh_components->{country})){
+		$rh_components->{country} = $rh_components->{state};
+                delete $rh_components->{state}
+	    }
+        }
+    }
+
+    return;
+}
+
+
+# sets and returns a state code
 sub _add_state_code {
-    my $self       = shift;
-    my $components = shift;
+    my $self          = shift;
+    my $rh_components = shift;
 
     ## TODO: what if the cc was given as an option?
-    my $cc = $self->_determine_country_code($components) || '';
+    my $cc = $self->_determine_country_code($rh_components) || '';
 
-    return if $components->{state_code};
-    return if !$components->{state};
+    return if $rh_components->{state_code};
+    return if !$rh_components->{state};
 
     if ( my $mapping = $self->{state_codes}{$cc} ){
         foreach ( keys %$mapping ){
-            if ( uc($components->{state}) eq uc($mapping->{$_}) ){
-                $components->{state_code} = $_;
+            if ( uc($rh_components->{state}) eq uc($mapping->{$_}) ){
+                $rh_components->{state_code} = $_;
             }
         }
     }
-    return $components->{state_code};
+    return $rh_components->{state_code};
 }
 
 sub _apply_replacements {
-    my $self        = shift;
-    my $components  = shift;
-    my $raa_rules   = shift;
+    my $self          = shift;
+    my $rh_components = shift;
+    my $raa_rules     = shift;
 
-    foreach my $key ( keys %$components ){
+    #warn Dumper $raa_rules;
+    foreach my $key ( keys %$rh_components ){
         foreach my $ra_fromto ( @$raa_rules ){
 
             try {
                 my $regexp = qr/$ra_fromto->[0]/;
-                $components->{$key} =~ s/$regexp/$ra_fromto->[1]/;
+                $rh_components->{$key} =~ s/$regexp/$ra_fromto->[1]/;
             }
             catch {
                 warn "invalid replacement: " . join(', ', @$ra_fromto)
             };
         }
     }
-    return $components;
+    return $rh_components;
 }
 
 # " abc,,def , ghi " => 'abc, def, ghi'
