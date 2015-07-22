@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.41    2015-07-21
+        - add Scalar::Util as dependency
+        - new templates (support for MT)
+        - deal with bad data - numeric country field
+
 1.4     2015-07-21
         - add Test::Warn as dependency
 
