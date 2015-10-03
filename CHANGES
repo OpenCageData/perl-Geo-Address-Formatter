@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.42    2015-10-03
+        - support for postformat substitution, for example BR psotcodes
+          see relevant test case: 
+          https://github.com/OpenCageData/address-formatting/commit/9026239ba59e09bff6efc1b18c8b6ab5f06959a5
+
 1.41    2015-07-21
         - add Scalar::Util as dependency
         - new templates (support for MT)
