@@ -240,8 +240,24 @@ sub _postformat {
     # do any country specific rules
     foreach my $ra_fromto ( @$raa_rules ){
         try {
-            my $regexp = qr/$ra_fromto->[0]/;
-            $text =~ s/$regexp/$ra_fromto->[1]/;
+            my $regexp = qr/$ra_fromto->[0]/;	    
+	    #say STDERR 'text: ' . $text;
+	    #say STDERR 're: ' . $regexp;
+            my $replacement = $ra_fromto->[1];
+
+            # ultra hack to do substitution
+            # limited to $1 and $2, should really be a while loop
+            # doing every substitution
+
+            if ($replacement =~ m/\$\d/){
+                if ($text =~ m/$regexp/){
+                    my $tmp1 = $1;
+                    my $tmp2 = $2;
+		    $replacement =~ s/\$1/$tmp1/;
+		    $replacement =~ s/\$2/$tmp2/;
+                }
+            }
+	    $text =~ s/$regexp/$replacement/;
         }
         catch {
             warn "invalid replacement: " . join(', ', @$ra_fromto)
