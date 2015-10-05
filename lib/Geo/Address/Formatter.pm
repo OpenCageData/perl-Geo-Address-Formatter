@@ -162,7 +162,7 @@ sub format_address {
     #warn Dumper $rh_components;
 
     # set the aliases, unless this would overwrite something
-    foreach my $alias (keys %{$self->{component_aliases}}){
+    foreach my $alias (sort keys %{$self->{component_aliases}}){
 
         if (defined($rh_components->{$alias})
             && !defined($rh_components->{$self->{component_aliases}->{$alias}})
@@ -341,7 +341,7 @@ sub _apply_replacements {
     my $raa_rules     = shift;
 
     #warn Dumper $raa_rules;
-    foreach my $key ( keys %$rh_components ){
+    foreach my $key ( sort keys %$rh_components ){
         foreach my $ra_fromto ( @$raa_rules ){
 
             try {
@@ -393,7 +393,7 @@ sub _render_template {
 
     # is it empty?
     if ($output !~ m/\w/){
-        my @comps = keys %$components;
+        my @comps = sort keys %$components;
         if (scalar(@comps) == 1){  
             foreach my $k (@comps){
                 $output = $components->{$k};
@@ -410,7 +410,7 @@ sub _find_unknown_components {
     my $components = shift;
 
     my %h_known = map { $_ => 1 } @{ $self->{ordered_components} };
-    my @a_unknown = grep { !exists($h_known{$_}) } keys %$components;
+    my @a_unknown = grep { !exists($h_known{$_}) } sort keys %$components;
 
     #warn Dumper \@a_unknown;
     return \@a_unknown;
