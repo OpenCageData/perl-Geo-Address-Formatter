@@ -172,7 +172,7 @@ sub format_address {
                 $rh_components->{$alias};
         }
     }
-    #warn "after setting aliases":
+    #warn "after setting aliases";
     #warn Dumper $rh_components;
     # determine the template
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
