@@ -24,8 +24,11 @@ my $af_path = dirname(__FILE__) . '/../../address-formatting';
 
 my $path = $af_path . '/testcases/';
 my $input_country;
+my $verbose = 0;
+
 GetOptions ( 
     'country:s'  => \$input_country,
+    'verbose'    => \$verbose,
 );
 if ( $input_country ){
   $input_country = lc($input_country);
@@ -64,7 +67,9 @@ if ( -d $path ){
 
         if (defined($input_country) && $input_country){
             if ($country ne $input_country){
-                warn "skipping $country tests";     
+                if ($verbose){
+                    warn "skipping $country tests";     
+                }
                 next;
             }
         }
