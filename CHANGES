@@ -1,14 +1,21 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.44    2015-11-16
+        - support for 'key=' replacement to act on single key
+        - reject postcodes over 20 chars in length
+        - lots of new templates, mainly in Africa
+
 1.43    2015-10-05
-        - fix reliance on keys of hash coming in same order found by CPAN Testers on newer 
-          versions of perl. 
+        - fix reliance on keys of hash coming in same order found by 
+          CPAN Testers on newer versions of perl. 
 
-          Many thanks to Alex Balhatchet for his help, he is hereby raised to position of
-          grand master of the eternal order of well formatted addresses, a position he will hold
-          for life (or until revoked). We bow before his greatness.
+          Many thanks to Alex Balhatchet for his help, he is hereby raised to 
+          position of grand master of the eternal order of well formatted 
+          addresses, a position he will hold for life (or until revoked). 
+          We bow before his greatness.
 
-        - also gets newest versions of the templates which adds formatting for Kenya (KE)
+        - also gets newest versions of the templates which adds formatting 
+          for Kenya (KE)
 
 1.42    2015-10-03
         - support for postformat substitution, for example BR postcodes

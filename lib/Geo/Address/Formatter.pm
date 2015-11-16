@@ -172,8 +172,9 @@ sub format_address {
                 $rh_components->{$alias};
         }
     }
-    #warn "after setting aliases";
-    #warn Dumper $rh_components;
+
+    $self->_sanity_cleaning($rh_components); 
+
     # determine the template
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
@@ -266,6 +267,18 @@ sub _postformat {
     return $text;
 }
 
+sub _sanity_cleaning {
+    my $self = shift;
+    my $rh_components = shift || return; 
+    if (defined($rh_components->{'postcode'})
+        && (length($rh_components->{'postcode'}) > 20)
+    ){
+        delete $rh_components->{'postcode'};
+    }
+    return;
+}
+
+
 sub _minimal_components {
     my $self = shift;
     my $rh_components = shift || return;
@@ -340,13 +353,28 @@ sub _apply_replacements {
     my $rh_components = shift;
     my $raa_rules     = shift;
 
-    #warn Dumper $raa_rules;
-    foreach my $key ( sort keys %$rh_components ){
-        foreach my $ra_fromto ( @$raa_rules ){
+#    warn "in _apply_replacements";
+#    warn "  raa_rules";
+#    warn Dumper $raa_rules;
+#    warn "  rh_components";
+#    warn Dumper $rh_components;
 
+    foreach my $component ( sort keys %$rh_components ){
+        foreach my $ra_fromto ( @$raa_rules ){
             try {
-                my $regexp = qr/$ra_fromto->[0]/;
-                $rh_components->{$key} =~ s/$regexp/$ra_fromto->[1]/;
+
+                # do key specific replacement
+                if ($ra_fromto->[0] =~ m/^$component=/){
+                    my $from = $ra_fromto->[0]; 
+                    $from =~ s/^$component=//;
+                    if ($rh_components->{$component} eq $from){
+			$rh_components->{$component} = $ra_fromto->[1]; 
+   		    }
+		} else {
+
+		    my $regexp = qr/$ra_fromto->[0]/;
+		    $rh_components->{$component} =~ s/$regexp/$ra_fromto->[1]/;
+		}
             }
             catch {
                 warn "invalid replacement: " . join(', ', @$ra_fromto)
