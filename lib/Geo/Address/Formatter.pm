@@ -275,6 +275,13 @@ sub _sanity_cleaning {
     ){
         delete $rh_components->{'postcode'};
     }
+
+    # catch values containing URLs
+    foreach my $c (keys %$rh_components){
+        if ($rh_components->{$c} =~ m|https?://|){
+            delete $rh_components->{$c};
+        }
+    }
     return;
 }
 
