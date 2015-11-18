@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.45    2015-11-18
+        - reject address components containing URLs
+          Thanks to Emil Żak - @zakemil - for reporting test case
+
 1.44    2015-11-16
         - support for 'key=' replacement to act on single key
         - reject postcodes over 20 chars in length
