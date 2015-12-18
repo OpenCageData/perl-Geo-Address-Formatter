@@ -1,5 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.47    2015-12-18
+        - better deal with "sub" countries like CW (Curaçao) tagged as NL
+
 1.46    2015-11-24
         - fix CPAN tester errors from yaml test file not ending in newline
 
