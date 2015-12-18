@@ -14,6 +14,7 @@ use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
 use Try::Tiny;
 use YAML qw(Load LoadFile);
+use utf8;
 
 my $THC = Text::Hogan::Compiler->new;
 my %THT_cache; # a place to store Text::Hogan::Template objects
@@ -159,6 +160,10 @@ sub format_address {
             || $self->_determine_country_code($rh_components) 
             || '';
 
+    if ($cc){
+	$rh_components->{country_code} = $cc;
+    } 
+
     #warn Dumper $rh_components;
 
     # set the aliases, unless this would overwrite something
@@ -167,7 +172,6 @@ sub format_address {
         if (defined($rh_components->{$alias})
             && !defined($rh_components->{$self->{component_aliases}->{$alias}})
         ){     
-            #warn "writing $alias";
             $rh_components->{$self->{component_aliases}->{$alias}} = 
                 $rh_components->{$alias};
         }
@@ -179,7 +183,9 @@ sub format_address {
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
 
+    #print STDERR "cc $cc\n";
     #print STDERR "comp " . Dumper $rh_components;
+
     # do we have the minimal components for an address?
     # or should we instead use the fallback template?
     if (!$self->_minimal_components($rh_components)){
@@ -193,8 +199,6 @@ sub format_address {
     }
     $template_text =~ s/\n/, /sg;
 
-    #print STDERR "t text " . Dumper $template_text;
-
     # clean up the components
     $self->_fix_country($rh_components);
     $self->_apply_replacements($rh_components, $rh_config->{replace});
@@ -205,7 +209,7 @@ sub format_address {
     if (scalar(@$ra_unknown)){
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
-    # warn Dumper $rh_components;
+    #warn Dumper $rh_components;
 
     # get a compiled template
     if (!defined($THT_cache{$template_text})){
@@ -305,9 +309,23 @@ sub _determine_country_code {
     my $rh_components = shift || return;
 
     # FIXME - validate it is a valid country
-    if (my $cc = $rh_components->{country_code} ){
-        return if ( $cc !~ m/^[a-z][a-z]$/i);
-        return 'GB' if ($cc =~ /uk/i);
+    return if (!defined($rh_components->{country_code}));
+
+    if ( my $cc = lc($rh_components->{country_code}) ){
+
+        return if ( $cc !~ m/^[a-z][a-z]$/);
+
+        return 'GB' if ($cc eq 'uk');
+
+        if ($cc eq 'nl'){
+            if (defined($rh_components->{state})
+		&& ($rh_components->{state} eq 'Curaçao')
+	    ){
+		$cc = 'cw';
+		$rh_components->{country} = 'Curaçao'
+	    }
+	}
+
         return uc($cc);
     }
     return;
@@ -332,7 +350,6 @@ sub _fix_country {
 
     return;
 }
-
 
 # sets and returns a state code
 sub _add_state_code {
