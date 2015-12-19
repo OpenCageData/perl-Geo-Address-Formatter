@@ -1,13 +1,12 @@
 use strict;
 use lib 'lib';
 use feature qw(say);
-use Test::More;
-use Test::Exception;
 use Data::Dumper;
 use File::Basename qw(basename dirname);
-use File::Spec;
 use File::Find::Rule;
-use File::Slurp;
+use File::Spec;
+use Test::Exception;
+use Test::More;
 use YAML qw(LoadFile);
 
 use utf8;
@@ -31,32 +30,28 @@ use_ok($CLASS);
 my $conf_path = dirname(__FILE__) . '/test_conf1';
 my $GAF = $CLASS->new( conf_path => $conf_path );
 
-
-
 sub _one_testcase {
-  my $country    = shift;
-  my $rh_testcase = shift;
-  is(
-    $GAF->format_address($rh_testcase->{components}),
-    $rh_testcase->{expected},
-    $country . ' - ' . $rh_testcase->{description}
-  );
+    my $country    = shift;
+    my $rh_testcase = shift;
+    is(
+        $GAF->format_address($rh_testcase->{components}),
+        $rh_testcase->{expected},
+        $country . ' - ' . $rh_testcase->{description}
+    );
 }
 
-
-
 foreach my $filename (@files){
-  my $country = basename($filename);
-  $country =~ s/\.\w+$//; # us.yaml => us
+    my $country = basename($filename);
+    $country =~ s/\.\w+$//; # us.yaml => us
 
-  my @a_testcases = ();
-  lives_ok {
-    @a_testcases = LoadFile($filename);
-  } "parsing file $filename";
+    my @a_testcases = ();
+    lives_ok {
+        @a_testcases = LoadFile($filename);
+    } "parsing file $filename";
 
-  foreach my $rh_testcase (@a_testcases){
-    _one_testcase($country, $rh_testcase);
-  }
+    foreach my $rh_testcase (@a_testcases){
+        _one_testcase($country, $rh_testcase);
+    }
 }
 
 
