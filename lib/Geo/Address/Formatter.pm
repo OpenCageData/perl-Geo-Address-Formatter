@@ -318,11 +318,15 @@ sub _determine_country_code {
         return 'GB' if ($cc eq 'uk');
 
         if ($cc eq 'nl'){
-            if (defined($rh_components->{state})
-		&& ($rh_components->{state} eq 'Curaçao')
-	    ){
-		$cc = 'cw';
-		$rh_components->{country} = 'Curaçao'
+            if (defined($rh_components->{state})){
+		if ($rh_components->{state} eq 'Curaçao'){
+		    $cc = 'cw';
+		    $rh_components->{country} = 'Curaçao';
+		}
+		elsif ($rh_components->{state} =~ m/^sint maarten/i){
+		    $cc = 'sx';
+		    $rh_components->{country} = 'Sint Maarten';
+		}
 	    }
 	}
 
