@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.48    2015-12-19
+        - better dist.ini, stop using File::Slurp in tests, see
+        http://blogs.perl.org/users/leon_timmermans/2015/08/fileslurp-is-broken-and-wrong.html
+        - thanks to MANWAR and KAORU for making me aware
+
 1.47    2015-12-18
         - better deal with "sub" countries like CW (Curaçao) tagged as NL
 
