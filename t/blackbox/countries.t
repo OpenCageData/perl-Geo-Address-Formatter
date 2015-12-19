@@ -1,16 +1,15 @@
 use strict;
 use lib 'lib';
 use feature qw(say);
-use Test::More;
-use Test::Exception;
 use Data::Dumper;
 use File::Basename;
-use File::Spec;
 use File::Find::Rule;
-use File::Slurp;
+use File::Slurper 'read_text';
+use File::Spec;
 use Getopt::Long;
+use Test::Exception;
+use Test::More;
 use YAML qw(LoadFile);
-
 use utf8;
 
 # nicer output for diag and failures, see
@@ -50,9 +49,7 @@ if ( -d $path ){
 
     sub _one_testcase {
         my $country    = shift;
-        #next if ($country ne 'de');
         my $rh_testcase = shift;
-        #next if ($rh_testcase->{expected} !~ m/Köln/);
         is(
           $GAF->format_address($rh_testcase->{components}),
           $rh_testcase->{expected},
@@ -80,7 +77,7 @@ if ( -d $path ){
         } "parsing file $filename";
 
         {
-          my $text = read_file($filename);
+          my $text = read_text($filename);
 
           ## example "Stauffenstra\u00dfe" which should be "Stauffenstraße"
           if ( $text =~ m/\\u00/ ){
