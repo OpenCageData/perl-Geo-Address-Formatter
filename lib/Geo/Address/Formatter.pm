@@ -317,6 +317,7 @@ sub _determine_country_code {
 
         return 'GB' if ($cc eq 'uk');
 
+
         if ($cc eq 'nl'){
             if (defined($rh_components->{state})){
 		if ($rh_components->{state} eq 'Curaçao'){
@@ -327,7 +328,15 @@ sub _determine_country_code {
 		    $cc = 'sx';
 		    $rh_components->{country} = 'Sint Maarten';
 		}
+		elsif ($rh_components->{state} =~ m/^Aruba/i){
+		    $cc = 'aw';
+		    $rh_components->{country} = 'Aruba';
+		}
 	    }
+	}
+        elsif ($cc eq 'bq'){
+            $cc = 'nl';
+	    $rh_components->{country} = 'Caribbean Netherlands, The Netherlands';
 	}
 
         return uc($cc);
