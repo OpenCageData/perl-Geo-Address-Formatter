@@ -338,6 +338,10 @@ sub _determine_country_code {
             $cc = 'nl';
 	    $rh_components->{country} = 'Caribbean Netherlands, The Netherlands';
 	}
+        elsif ($cc eq 'ax'){
+            $cc = 'fi';
+	    $rh_components->{country} = 'Åland, Finland';
+	}
 
         return uc($cc);
     }
