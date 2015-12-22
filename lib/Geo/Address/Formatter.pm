@@ -342,6 +342,10 @@ sub _determine_country_code {
             $cc = 'fi';
 	    $rh_components->{country} = 'Åland, Finland';
 	}
+        elsif ($cc eq 'gf'){
+            $cc = 'fr';
+	    $rh_components->{country} = 'France';
+	}
 
         return uc($cc);
     }
