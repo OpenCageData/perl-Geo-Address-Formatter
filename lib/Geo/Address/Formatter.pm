@@ -89,6 +89,7 @@ sub _read_configuration {
     $self->{templates} = {};
     $self->{component_aliases} = {};
 
+    # read the config file(s)
     foreach my $filename ( sort @a_filenames ){
         try {
             my $rh_templates = LoadFile($filename);
@@ -105,6 +106,7 @@ sub _read_configuration {
         };
     }
 
+    # see if we can load the components
     try {
         my @c = LoadFile($path . '/components.yaml');
 
@@ -115,8 +117,6 @@ sub _read_configuration {
                 }
             }
         }
-        #warn Dumper $self->{component_aliases};
-        #warn Dumper \@c;
         $self->{ordered_components} = 
             [ map { $_->{name} => ($_->{aliases} ? @{$_->{aliases}} : ()) } @c];
     }
@@ -124,11 +124,11 @@ sub _read_configuration {
         warn "error parsing component configuration: $_";
     };
 
+    # get the state codes
     $self->{state_codes} = {};
     if ( -e $path . '/state_codes.yaml'){
         try {
             my $rh_c = LoadFile($path . '/state_codes.yaml');
-            # warn Dumper $rh_c;
             $self->{state_codes} = $rh_c;
         }
         catch {
@@ -304,6 +304,13 @@ sub _minimal_components {
     return 1;
 }
 
+my %valid_replacement_components = (
+    'state' => 1,
+);
+
+# determines which country code to use
+# may also override other configuration if we are dealing with 
+# a dependent territory
 sub _determine_country_code {
     my $self          = shift;
     my $rh_components = shift || return;
@@ -313,41 +320,55 @@ sub _determine_country_code {
 
     if ( my $cc = lc($rh_components->{country_code}) ){
 
+        # is it two letters long?
         return if ( $cc !~ m/^[a-z][a-z]$/);
-
         return 'GB' if ($cc eq 'uk');
 
+        $cc = uc($cc); 
 
-        if ($cc eq 'nl'){
+        # check if the configuration tells us to use 
+        # the configuration of another country
+        # used in cases of dependent territories like
+        # American Samoa (AS) and Puerto Rico (PR)
+        if ( defined( $self->{templates}{$cc} )
+             && defined( $self->{templates}{$cc}{use_country} )
+        ){
+            my $old_cc = $cc;
+            $cc = $self->{templates}{$cc}{use_country};
+            if (defined( $self->{templates}{$old_cc}{change_country} )){
+		$rh_components->{country} = 
+		    $self->{templates}{$old_cc}{change_country};
+            } 
+            if (defined( $self->{templates}{$old_cc}{add_component} )){
+                my $tmp = $self->{templates}{$old_cc}{add_component};
+                my ($k,$v) = split(/=/,$tmp);
+                # check whitelist of valid replacement components
+                if (defined( $valid_replacement_components{$k} )){
+		    $rh_components->{$k} = $v;
+		}
+            } 
+        }
+
+#        warn "cc $cc";
+#        warn Dumper $rh_components;
+
+        if ($cc eq 'NL'){
             if (defined($rh_components->{state})){
 		if ($rh_components->{state} eq 'Curaçao'){
-		    $cc = 'cw';
+		    $cc = 'CW';
 		    $rh_components->{country} = 'Curaçao';
 		}
 		elsif ($rh_components->{state} =~ m/^sint maarten/i){
-		    $cc = 'sx';
+		    $cc = 'SX';
 		    $rh_components->{country} = 'Sint Maarten';
 		}
 		elsif ($rh_components->{state} =~ m/^Aruba/i){
-		    $cc = 'aw';
+		    $cc = 'AW';
 		    $rh_components->{country} = 'Aruba';
 		}
 	    }
 	}
-        elsif ($cc eq 'bq'){
-            $cc = 'nl';
-	    $rh_components->{country} = 'Caribbean Netherlands, The Netherlands';
-	}
-        elsif ($cc eq 'ax'){
-            $cc = 'fi';
-	    $rh_components->{country} = 'Åland, Finland';
-	}
-        elsif ($cc eq 'gf'){
-            $cc = 'fr';
-	    $rh_components->{country} = 'France';
-	}
-
-        return uc($cc);
+        return $cc;
     }
     return;
 }
@@ -377,13 +398,11 @@ sub _add_state_code {
     my $self          = shift;
     my $rh_components = shift;
 
-    ## TODO: what if the cc was given as an option?
-    my $cc = $self->_determine_country_code($rh_components) || '';
-
     return if $rh_components->{state_code};
     return if !$rh_components->{state};
+    return if !$rh_components->{country_code};
 
-    if ( my $mapping = $self->{state_codes}{$cc} ){
+    if ( my $mapping = $self->{state_codes}{$rh_components->{country_code}} ){
         foreach ( keys %$mapping ){
             if ( uc($rh_components->{state}) eq uc($mapping->{$_}) ){
                 $rh_components->{state_code} = $_;
@@ -398,16 +417,15 @@ sub _apply_replacements {
     my $rh_components = shift;
     my $raa_rules     = shift;
 
-#    warn "in _apply_replacements";
-#    warn "  raa_rules";
-#    warn Dumper $raa_rules;
-#    warn "  rh_components";
-#    warn Dumper $rh_components;
+    #warn "in _apply_replacements";
+    #warn "  raa_rules";
+    #warn Dumper $raa_rules;
+    #warn "  rh_components";
+    #warn Dumper $rh_components;
 
     foreach my $component ( sort keys %$rh_components ){
         foreach my $ra_fromto ( @$raa_rules ){
             try {
-
                 # do key specific replacement
                 if ($ra_fromto->[0] =~ m/^$component=/){
                     my $from = $ra_fromto->[0]; 
