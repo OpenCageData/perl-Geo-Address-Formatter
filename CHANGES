@@ -1,5 +1,16 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.49    2016-02-01
+        - support new template tags to allow dependent territories
+          or countries that share the same postal system
+        - eliminate old hacky code as logic has now moved to config
+        - many new country templates, tests
+        - From the coverage script in the address-formatting repo:
+          We are aware of 249 territories
+          We have tests for 156 territories 
+          We have rules for 210 territories 
+          39 territories have neither rules nor tests
+
 1.48    2015-12-19
         - better dist.ini, stop using File::Slurp in tests, see
         http://blogs.perl.org/users/leon_timmermans/2015/08/fileslurp-is-broken-and-wrong.html
