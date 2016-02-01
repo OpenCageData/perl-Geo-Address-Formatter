@@ -45,7 +45,7 @@ my $GAF = $CLASS->new( conf_path => $path );
 
 {
   is( $GAF->_add_state_code( {} ), undef );
-  is( $GAF->_add_state_code( { country_code => 'br', state => 'Sao Paulo'} ), undef );
+  is( $GAF->_add_state_code( { country_code => 'BR', state => 'Sao Paulo'} ), undef );
   is( $GAF->_add_state_code( { country_code => 'us', state => 'California'}), 'CA' );
 }
 

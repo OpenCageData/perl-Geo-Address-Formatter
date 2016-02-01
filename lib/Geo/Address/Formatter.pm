@@ -401,6 +401,8 @@ sub _add_state_code {
     return if $rh_components->{state_code};
     return if !$rh_components->{state};
     return if !$rh_components->{country_code};
+    # ensure it is uppercase
+    $rh_components->{country_code} = uc($rh_components->{country_code});
 
     if ( my $mapping = $self->{state_codes}{$rh_components->{country_code}} ){
         foreach ( keys %$mapping ){
