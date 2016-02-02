@@ -1,5 +1,15 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.50    2016-02-02
+        - fix for some YAML parsers complaining about lack of 
+          newline in testcases
+        - no code changes, but more tests and conf changes
+        - From the coverage script in the address-formatting repo:
+          We are aware of 249 territories 
+          We have tests for 162 territories 
+          We have rules for 217 territories 
+          32 territories have neither rules nor tests
+
 1.49    2016-02-01
         - support new template tags to allow dependent territories
           or countries that share the same postal system
