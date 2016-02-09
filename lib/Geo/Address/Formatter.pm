@@ -336,8 +336,18 @@ sub _determine_country_code {
             my $old_cc = $cc;
             $cc = $self->{templates}{$cc}{use_country};
             if (defined( $self->{templates}{$old_cc}{change_country} )){
-		$rh_components->{country} = 
-		    $self->{templates}{$old_cc}{change_country};
+
+                my $new_country = $self->{templates}{$old_cc}{change_country};
+                if ($new_country =~ m/\$(\w*)/){
+                    my $component = $1;
+                    if ( defined($rh_components->{$component}) ){
+			$new_country =~ s/\$$component/$rh_components->{$component}/;
+                    } else {
+			$new_country =~ s/\$$component//;
+                    }
+                }
+		$rh_components->{country} = $new_country; 
+		    
             } 
             if (defined( $self->{templates}{$old_cc}{add_component} )){
                 my $tmp = $self->{templates}{$old_cc}{add_component};
