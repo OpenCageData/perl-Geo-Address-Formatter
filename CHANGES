@@ -1,5 +1,13 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.51    2016-02-09
+        - more support for dependent territories and the odd edge cases 
+        - From the coverage script in the address-formatting repo:
+          We are aware of 249 territories 
+          We have tests for 174 territories 
+          We have rules for 228 territories 
+          21 territories have neither rules nor tests
+
 1.50    2016-02-02
         - fix for some YAML parsers complaining about lack of 
           newline in testcases
