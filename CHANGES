@@ -1,5 +1,16 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.52    2016-02-16
+        - output (and tests in the address-formatting submodule repository) 
+          is now multilinerather than comma seperated. Many countries 
+          have formats where commas are significant.
+          Clearly we should have done it that way from the start. Apologies.
+        - From the coverage script in the address-formatting repo:
+          We are aware of 249 territories 
+          We have tests for 177 territories 
+          We have rules for 229 territories 
+          20 territories have neither rules nor tests
+
 1.51    2016-02-09
         - more support for dependent territories and the odd edge cases 
         - From the coverage script in the address-formatting repo:
