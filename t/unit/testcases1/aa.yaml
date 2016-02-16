@@ -5,4 +5,7 @@ components:
     two: TWO
     three: THREE
     four: FOUR
-expected: ONE, TWO, THREE
+expected:   |
+    ONE, TWO
+    THREE
+
