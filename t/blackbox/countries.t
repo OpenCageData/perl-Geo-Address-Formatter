@@ -95,6 +95,15 @@ if ( -d $path ){
                 'there is a TAB in the YAML file. That will cause parsing errors'
               );
           }
+          if ( $text !~ m/\n$/ ){
+              like(
+                $text,
+                qr!\n$!,
+                'file doesnt end in newline. This will cause parsing errors'
+             );
+
+          }
+
         }
         foreach my $rh_testcase (@a_testcases){
             _one_testcase($country, $rh_testcase);
