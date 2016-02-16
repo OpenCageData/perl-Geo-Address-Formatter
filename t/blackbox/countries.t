@@ -50,9 +50,33 @@ if ( -d $path ){
     sub _one_testcase {
         my $country    = shift;
         my $rh_testcase = shift;
+
+        my $expected = $rh_testcase->{expected};
+        my $actual = $GAF->format_address($rh_testcase->{components});
+
+        #warn "e1 $expected\n";
+        #warn "a1 $actual\n";
+        if (0) { # turn on for char by char comparison 
+            my @e = (split//, $expected);
+            my @a = (split//, $actual); 
+            my $c = 0;
+            foreach my $char (@e){
+                if ($e[$c] eq $a[$c]){
+                    warn "same $c same $a[$c]";
+                } else {
+                    warn "not same $c " . $e[$c] . ' ' . $a[$c] . "\n";
+                } 
+                $c++;
+            }
+            #$expected =~ s/\n/, /g;
+            #$actual =~ s/\n/, /g;
+            #warn "e2 $expected\n";
+            #warn "a2 $actual\n";
+        }
+
         is(
-          $GAF->format_address($rh_testcase->{components}),
-          $rh_testcase->{expected},
+          $actual,
+          $expected,
           $country . ' - ' . $rh_testcase->{description}
         );
     }
