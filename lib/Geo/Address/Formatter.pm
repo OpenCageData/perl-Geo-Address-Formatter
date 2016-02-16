@@ -163,7 +163,6 @@ sub format_address {
     if ($cc){
 	$rh_components->{country_code} = $cc;
     } 
-
     #warn Dumper $rh_components;
 
     # set the aliases, unless this would overwrite something
@@ -176,7 +175,6 @@ sub format_address {
                 $rh_components->{$alias};
         }
     }
-
     $self->_sanity_cleaning($rh_components); 
 
     # determine the template
@@ -197,7 +195,6 @@ sub format_address {
         }
         # no fallback
     }
-    $template_text =~ s/\n/, /sg;
 
     # clean up the components
     $self->_fix_country($rh_components);
@@ -218,7 +215,8 @@ sub format_address {
     my $compiled_template = $THT_cache{$template_text};
 
     # render it
-    my $text = $self->_render_template($compiled_template, $rh_components);
+    my $text;
+    $text = $self->_render_template($compiled_template, $rh_components);
     $text = $self->_postformat($text,$rh_config->{postformat_replace});
     $text = $self->_clean($text);
     return $text;
@@ -231,7 +229,7 @@ sub _postformat {
     my $text_orig = $text; # keep a copy
 
     # remove duplicates
-    my @before_pieces = split(/,/, $text);
+    my @before_pieces = split(/, /, $text);
     my %seen;
     my @after_pieces;
     foreach my $piece (@before_pieces){
@@ -288,7 +286,6 @@ sub _sanity_cleaning {
     }
     return;
 }
-
 
 sub _minimal_components {
     my $self = shift;
@@ -383,12 +380,11 @@ sub _determine_country_code {
     return;
 }
 
-# sets and returns a state code
+# hacks for bad country data
 sub _fix_country {
     my $self          = shift;
     my $rh_components = shift || return;
 
-    #warn Dumper $rh_components;
     # is the country a number?
     # if so, and there is a state, use state as country
     if (defined($rh_components->{country})){
@@ -399,7 +395,6 @@ sub _fix_country {
 	    }
         }
     }
-
     return;
 }
 
@@ -460,21 +455,55 @@ sub _apply_replacements {
 }
 
 # " abc,,def , ghi " => 'abc, def, ghi'
+
 sub _clean {
     my $self = shift;
     my $out  = shift // '';
+    #warn "entering _clean \n$out";
+
     $out =~ s/[\},\s]+$//;
     $out =~ s/^[,\s]+//;
 
     $out =~ s/,\s*,/, /g; # multiple commas to one   
-    $out =~ s/\s+,\s+/, /g; # one space behind comma
+    $out =~ s/\h+,\h+/, /g; # one horiz whitespace behind comma
+    $out =~ s/\h\h+/ /g;  # multiple horiz whitespace to one
+    $out =~ s/\h\n/\n/g;  # horiz whitespace, newline to newline
+    $out =~ s/\n,/\n/g;   # newline comma to just newline
+    $out =~ s/,,+/,/g;    # multiple commas to one
+    $out =~ s/,\n/\n/g;   # comma newline to just newline
+    $out =~ s/\n\h+/\n/g; # newline plus space to newline
+    $out =~ s/\n\n+/\n/g; # multiple newline to one
 
-    $out =~ s/\s\s+/ /g; # multiple whitespace to one
-    $out =~ s/,,+/,/g; # multiple commas to one
+    # final dedupe across and within lines
+    my @before_pieces = split(/\n/, $out);
+    my %seen_lines;
+    my @after_pieces;
+    foreach my $line (@before_pieces){
+        $line =~s/^\h+//g;
+        $line =~s/\h+$//g;
+        $seen_lines{$line}++;
+        next if ($seen_lines{$line} > 1); 
+        # now dedupe within the line
+        my @before_words = split(/,/, $line);
+        my %seen_words;
+        my @after_words;
+	foreach my $w (@before_words){
+	    $w =~s/^\h+//g;
+	    $w =~s/\h+$//g;
+	    $seen_words{$w}++;
+	    next if ($seen_words{$w} > 1);
+	    push(@after_words,$w);
+	}
+	$line = join(', ', @after_words);
+        push(@after_pieces,$line);
+    }
+    $out = join("\n", @after_pieces);
 
-    $out =~ s/^\s+//;
-    $out =~ s/\s+$//;
-    return $out;
+    $out =~ s/^\s+//; # remove leading whitespace
+    $out =~ s/\s+$//; # remove end whitespace
+
+    $out .= "\n";     # add final newline
+    return $out;      # we are done
 }
 
 sub _render_template {
@@ -492,6 +521,7 @@ sub _render_template {
     };
     
     my $output = $THTemplate->render($context);
+    #warn "in _render pre _clean $output";
     $output = $self->_clean($output);
 
     # is it empty?
