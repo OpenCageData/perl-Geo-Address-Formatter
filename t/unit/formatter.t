@@ -24,16 +24,14 @@ my $GAF = $CLASS->new( conf_path => $path );
     'DE',
     'determine_country 2'
   );
-
 }
 
 
-
 {
-  is($GAF->_clean(undef),'', 'clean - undef');
-  is($GAF->_clean(0),'0', 'clean - zero');
+  is($GAF->_clean(undef),undef, 'clean - undef');
+  is($GAF->_clean(0),"0\n", 'clean - zero');
   my $rh_tests = {
-    '  , abc , def ,, ghi , ' => 'abc, def, ghi'
+    '  , abc , def ,, ghi , ' => "abc, def, ghi\n",
   };
 
   while ( my($source, $expected) = each(%$rh_tests) ){
@@ -91,7 +89,7 @@ my $GAF = $CLASS->new( conf_path => $path );
         $THT,
         { two => 2 }
       ),
-    'abc 2 def',
+    "abc 2 def\n",
     '_render_template - first'
   );
 }

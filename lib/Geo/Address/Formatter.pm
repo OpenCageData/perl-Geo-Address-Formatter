@@ -458,7 +458,7 @@ sub _apply_replacements {
 
 sub _clean {
     my $self = shift;
-    my $out  = shift // '';
+    my $out  = shift // return undef;
     #warn "entering _clean \n$out";
 
     $out =~ s/[\},\s]+$//;
