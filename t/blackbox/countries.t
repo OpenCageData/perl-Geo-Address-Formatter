@@ -11,6 +11,7 @@ use Test::Exception;
 use Test::More;
 use YAML qw(LoadFile);
 use utf8;
+use feature "unicode_strings";
 
 # nicer output for diag and failures, see
 # http://perldoc.perl.org/Test/More.html#CAVEATS-and-NOTES
@@ -30,23 +31,48 @@ GetOptions (
     'verbose'    => \$verbose,
 );
 if ( $input_country ){
-  $input_country = lc($input_country);
+    $input_country = lc($input_country);
 }
 
 ok(1);
 
 if ( -d $path ){
 
-    my $path2 = $af_path . '/conf/';
+    my $conf_path = $af_path . '/conf/';
 
     my @files = File::Find::Rule->file()->name( '*.yaml' )->in( $path );
 
-    ok(scalar(@files), 'found at least one file');
+    ok(scalar(@files), 'found at least one yaml file');
 
     my $CLASS = 'Geo::Address::Formatter';
     use_ok($CLASS);
-    my $GAF = $CLASS->new( conf_path => $path2 );
+    my $GAF = $CLASS->new( conf_path => $conf_path );
 
+
+    # check the conf file for formatting errors
+    my $conffile = $conf_path . 'countries/worldwide.yaml';
+    ok(-e $conffile, 'found worldwide conf file');
+
+    # escaped parens and \d need to be double escaped for python
+    my $no_bad_parens = 1;    
+    open my $FH, "<:encoding(UTF-8)", $conffile 
+        or die "unable to open $conffile $!";
+    while (my $line = <$FH>){
+        next if ($line =~ m/^\s*#/);
+        my @probchars = ('\(', '\)', 'd');
+        foreach my $c (@probchars){
+            if ($line =~ m/\\$c/ && $line !~ m/\\\\$c/){
+                warn $line;
+                $no_bad_parens = 0;
+                last; # bail out
+            }
+        }
+    }
+    close $FH;
+    ok($no_bad_parens == 1, 'no badly escaped parens in worldwide conf file');
+
+
+    # ok, time to actually run the country tests
     sub _one_testcase {
         my $country    = shift;
         my $rh_testcase = shift;
