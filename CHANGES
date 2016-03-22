@@ -1,5 +1,15 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.52    2016-03-22
+        - require Text::Trim to stop some CPAN testers failures, no further 
+          code changes
+        - From the coverage script in the address-formatting repo:
+        We are aware of 249 territories 
+        We have tests for 229 (91%) territories
+        We have rules for 249 (100%) territories
+        0 (0%) territories have neither rules nor tests
+        
+
 1.52    2016-02-16
         - output (and tests in the address-formatting submodule repository) 
           is now multilinerather than comma seperated. Many countries 
