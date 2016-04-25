@@ -45,7 +45,7 @@ components to consider.
 
 This module comes with a minimal configuration to run tests. Instead of
 developing your own configuration please use (and contribute to)
-those in https://github.com/lokku/address-formatting 
+those in https://github.com/OpenCageData/address-formatting 
 which includes test cases. 
 
 Together we can address the world!
