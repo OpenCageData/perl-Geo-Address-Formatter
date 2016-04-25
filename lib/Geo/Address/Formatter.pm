@@ -54,7 +54,7 @@ Together we can address the world!
 
   #
   # get the templates (or use your own) 
-  # git clone git@github.com:lokku/address-formatting.git
+  # git clone git@github.com:OpenCageData/address-formatting.git
   # 
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
   my $components = { ... }
