@@ -151,7 +151,13 @@ if ( -d $path ){
                 qr!\n$!,
                 'file doesnt end in newline. This will cause parsing errors'
              );
-
+          }
+          if ( $text =~ /:\s*0/ ){
+              like(
+                $text,
+                qr!:s\*0!,
+                'zero unquoted. The PHP YAML parser will convert 0012 to 12'
+              );
           }
 
         }
