@@ -161,7 +161,7 @@ sub format_address {
             || '';
 
     if ($cc){
-	$rh_components->{country_code} = $cc;
+        $rh_components->{country_code} = $cc;
     } 
     #warn Dumper $rh_components;
 
@@ -243,9 +243,9 @@ sub _postformat {
     # do any country specific rules
     foreach my $ra_fromto ( @$raa_rules ){
         try {
-            my $regexp = qr/$ra_fromto->[0]/;	    
-	    #say STDERR 'text: ' . $text;
-	    #say STDERR 're: ' . $regexp;
+            my $regexp = qr/$ra_fromto->[0]/;            
+            #say STDERR 'text: ' . $text;
+            #say STDERR 're: ' . $regexp;
             my $replacement = $ra_fromto->[1];
 
             # ultra hack to do substitution
@@ -256,11 +256,11 @@ sub _postformat {
                 if ($text =~ m/$regexp/){
                     my $tmp1 = $1;
                     my $tmp2 = $2;
-		    $replacement =~ s/\$1/$tmp1/;
-		    $replacement =~ s/\$2/$tmp2/;
+                    $replacement =~ s/\$1/$tmp1/;
+                    $replacement =~ s/\$2/$tmp2/;
                 }
             }
-	    $text =~ s/$regexp/$replacement/;
+            $text =~ s/$regexp/$replacement/;
         }
         catch {
             warn "invalid replacement: " . join(', ', @$ra_fromto)
@@ -338,21 +338,21 @@ sub _determine_country_code {
                 if ($new_country =~ m/\$(\w*)/){
                     my $component = $1;
                     if ( defined($rh_components->{$component}) ){
-			$new_country =~ s/\$$component/$rh_components->{$component}/;
+                        $new_country =~ s/\$$component/$rh_components->{$component}/;
                     } else {
-			$new_country =~ s/\$$component//;
+                        $new_country =~ s/\$$component//;
                     }
                 }
-		$rh_components->{country} = $new_country; 
-		    
+                $rh_components->{country} = $new_country; 
+                    
             } 
             if (defined( $self->{templates}{$old_cc}{add_component} )){
                 my $tmp = $self->{templates}{$old_cc}{add_component};
                 my ($k,$v) = split(/=/,$tmp);
                 # check whitelist of valid replacement components
                 if (defined( $valid_replacement_components{$k} )){
-		    $rh_components->{$k} = $v;
-		}
+                    $rh_components->{$k} = $v;
+                }
             } 
         }
 
@@ -361,20 +361,20 @@ sub _determine_country_code {
 
         if ($cc eq 'NL'){
             if (defined($rh_components->{state})){
-		if ($rh_components->{state} eq 'Curaçao'){
-		    $cc = 'CW';
-		    $rh_components->{country} = 'Curaçao';
-		}
-		elsif ($rh_components->{state} =~ m/^sint maarten/i){
-		    $cc = 'SX';
-		    $rh_components->{country} = 'Sint Maarten';
-		}
-		elsif ($rh_components->{state} =~ m/^Aruba/i){
-		    $cc = 'AW';
-		    $rh_components->{country} = 'Aruba';
-		}
-	    }
-	}
+                if ($rh_components->{state} eq 'Curaçao'){
+                    $cc = 'CW';
+                    $rh_components->{country} = 'Curaçao';
+                }
+                elsif ($rh_components->{state} =~ m/^sint maarten/i){
+                    $cc = 'SX';
+                    $rh_components->{country} = 'Sint Maarten';
+                }
+                elsif ($rh_components->{state} =~ m/^Aruba/i){
+                    $cc = 'AW';
+                    $rh_components->{country} = 'Aruba';
+                }
+            }
+        }
         return $cc;
     }
     return;
@@ -388,11 +388,11 @@ sub _fix_country {
     # is the country a number?
     # if so, and there is a state, use state as country
     if (defined($rh_components->{country})){
-	if (defined($rh_components->{state}) ){
+        if (defined($rh_components->{state}) ){
             if (looks_like_number($rh_components->{country})){
-		$rh_components->{country} = $rh_components->{state};
+                $rh_components->{country} = $rh_components->{state};
                 delete $rh_components->{state}
-	    }
+            }
         }
     }
     return;
@@ -438,13 +438,13 @@ sub _apply_replacements {
                     my $from = $ra_fromto->[0]; 
                     $from =~ s/^$component=//;
                     if ($rh_components->{$component} eq $from){
-			$rh_components->{$component} = $ra_fromto->[1]; 
-   		    }
-		} else {
+                        $rh_components->{$component} = $ra_fromto->[1]; 
+                       }
+                } else {
 
-		    my $regexp = qr/$ra_fromto->[0]/;
-		    $rh_components->{$component} =~ s/$regexp/$ra_fromto->[1]/;
-		}
+                    my $regexp = qr/$ra_fromto->[0]/;
+                    $rh_components->{$component} =~ s/$regexp/$ra_fromto->[1]/;
+                }
             }
             catch {
                 warn "invalid replacement: " . join(', ', @$ra_fromto)
@@ -487,14 +487,14 @@ sub _clean {
         my @before_words = split(/,/, $line);
         my %seen_words;
         my @after_words;
-	foreach my $w (@before_words){
-	    $w =~s/^\h+//g;
-	    $w =~s/\h+$//g;
-	    $seen_words{$w}++;
-	    next if ($seen_words{$w} > 1);
-	    push(@after_words,$w);
-	}
-	$line = join(', ', @after_words);
+        foreach my $w (@before_words){
+            $w =~s/^\h+//g;
+            $w =~s/\h+$//g;
+            $seen_words{$w}++;
+            next if ($seen_words{$w} > 1);
+            push(@after_words,$w);
+        }
+        $line = join(', ', @after_words);
         push(@after_pieces,$line);
     }
     $out = join("\n", @after_pieces);
