@@ -1,6 +1,11 @@
 Revision history for Perl module Geo::Address::Formatter.
 
-1.52    2016-03-22
+
+1.5.4   2016-04-27
+        - enforce YAML starting with 0 in test cases are quoted. PHP YAML
+          parser otherwise reads a postcode of 00123 as 123.
+
+1.53    2016-03-22
         - require Text::Trim to stop some CPAN testers failures, no further 
           code changes
         - From the coverage script in the address-formatting repo:
