@@ -103,7 +103,7 @@ if ( -d $path ){
         is(
           $actual,
           $expected,
-          $country . ' - ' . $rh_testcase->{description}
+          $country . ' - ' . ( $rh_testcase->{description} || 'no description set' )
         );
     }
 
