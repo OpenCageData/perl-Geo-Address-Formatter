@@ -1,7 +1,18 @@
 Revision history for Perl module Geo::Address::Formatter.
 
 
-1.5.4   2016-04-27
+1.55   2016-05-02
+       - no code changes
+       - set min perl version to 5.12 to avoid cpantesters warnings for
+         perls that don't support 'feature "unicode_strings";'
+       - use github issue tracker not RT
+       - From the coverage script in the address-formatting repo:
+       We are aware of 249 territories 
+       We have tests for 243 (97%) territories
+       We have rules for 249 (100%) territories
+       0 (0%) territories have neither rules nor tests
+
+1.54   2016-04-27
         - enforce YAML starting with 0 in test cases are quoted. PHP YAML
           parser otherwise reads a postcode of 00123 as 123.
 
