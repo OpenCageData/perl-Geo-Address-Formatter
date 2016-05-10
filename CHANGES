@@ -1,5 +1,13 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.56   2016-05-10
+       - no code changes
+       - we now have at least one test for each of the 249 territories of the world!
+       - From the coverage script in the address-formatting repo:
+       We are aware of 249 territories 
+       We have tests for 249 (100%) territories
+       We have rules for 249 (100%) territories
+       0 (0%) territories have neither rules nor tests
 
 1.55   2016-05-02
        - no code changes
