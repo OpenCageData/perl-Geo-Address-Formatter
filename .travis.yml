@@ -8,7 +8,7 @@ perl:
   - '5.18'
 before_install:
   # get address-formatting template
-  - "git submodule update --init --recursive"
+  - "git submodule foreach git pull origin master"
   # get the modules we need 
   - "cpanm Dist::Zilla"
   # install dist development dependencies
