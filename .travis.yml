@@ -8,10 +8,10 @@ perl:
   - '5.18'
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied"
 before_install:
-  # get address-formatting template
-  - "git submodule init"
-  - "git submodule foreach git pull origin master"
-  # get the modules we need
+  # submodule should be requested automatically, see
+  # https://docs.travis-ci.com/user/common-build-problems/#Git-Submodules-are-not-updated-correctly
+  #
+  # get the perl modules we need
   # install dist development dependencies
   - "cpanm Dist::Zilla"
   - "dzil authordeps | xargs cpanm"
