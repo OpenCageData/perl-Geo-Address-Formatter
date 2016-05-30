@@ -9,6 +9,7 @@ perl:
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied"
 before_install:
   # get address-formatting template
+  - "git submodule init"
   - "git submodule foreach git pull origin master"
   # get the modules we need
   # install dist development dependencies
