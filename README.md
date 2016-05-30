@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter.svg?branch=master)](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter)
+
 # perl-Geo-Address-Formatter
 
 Perl CPAN module to take structured address data and format it
