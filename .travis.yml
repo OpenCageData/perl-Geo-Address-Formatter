@@ -1,0 +1,25 @@
+---
+language: 'perl'
+perl:
+  - blead
+  - dev
+  - '5.22'
+  - '5.20'
+  - '5.18'
+before_install:
+  # get address-formatting template
+  - "git submodule update --init --recursive"
+  # get the modules we need 
+  - "cpanm Dist::Zilla"
+  # install dist development dependencies
+  - "dzil authordeps | xargs cpanm"
+  - "export tmpbuild=`mktemp --directory`"
+  - "dzil build --in $tmpbuild"
+install: "dzil listdeps | xargs cpanm"
+script: "dzil test --author"
+notifications:
+  email:
+    on_failure: always
+    on_success: change
+    recipients:
+      - edf@opencagedata.com
