@@ -6,12 +6,13 @@ perl:
   - '5.22'
   - '5.20'
   - '5.18'
+env: PERL_CPANM_OPT="--notest --force --skip-satisfied"
 before_install:
   # get address-formatting template
   - "git submodule foreach git pull origin master"
-  # get the modules we need 
-  - "cpanm Dist::Zilla"
+  # get the modules we need
   # install dist development dependencies
+  - "cpanm Dist::Zilla"
   - "dzil authordeps | xargs cpanm"
   - "export tmpbuild=`mktemp --directory`"
   - "dzil build --in $tmpbuild"
