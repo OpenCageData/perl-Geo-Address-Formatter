@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.57   2016-06-16
+       - deal with postcode ranges like '68100;68200' which it seems are not
+         uncommon in OSM
+
 1.56   2016-05-10
        - no code changes
        - we now have at least one test for each of the 249 territories of the world!
