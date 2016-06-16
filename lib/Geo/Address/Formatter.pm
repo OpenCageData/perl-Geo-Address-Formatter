@@ -271,11 +271,17 @@ sub _postformat {
 
 sub _sanity_cleaning {
     my $self = shift;
-    my $rh_components = shift || return; 
-    if (defined($rh_components->{'postcode'})
-        && (length($rh_components->{'postcode'}) > 20)
-    ){
-        delete $rh_components->{'postcode'};
+    my $rh_components = shift || return;
+    
+    if ( defined($rh_components->{'postcode'}) ){
+        
+        if ( length($rh_components->{'postcode'}) > 20){
+            delete $rh_components->{'postcode'};
+        }
+        elsif($rh_components->{'postcode'} =~ m/\d+;\d+/){
+              # sometimes OSM has postcode ranges
+              delete $rh_components->{'postcode'};
+        }
     }
 
     # catch values containing URLs
