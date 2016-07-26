@@ -4,7 +4,7 @@ package Geo::Address::Formatter;
 
 use strict;
 use warnings;
-
+use feature qw(say);
 use Clone qw(clone);
 use Data::Dumper;
 use File::Basename qw(dirname);
@@ -274,7 +274,7 @@ sub _sanity_cleaning {
     my $rh_components = shift || return;
     
     if ( defined($rh_components->{'postcode'}) ){
-        
+
         if ( length($rh_components->{'postcode'}) > 20){
             delete $rh_components->{'postcode'};
         }
@@ -282,6 +282,9 @@ sub _sanity_cleaning {
               # sometimes OSM has postcode ranges
               delete $rh_components->{'postcode'};
         }
+        elsif ($rh_components->{'postcode'} =~ m/^(\d{5}),\d{5}/){
+            $rh_components->{'postcode'} = $1;
+        }        
     }
 
     # catch values containing URLs
