@@ -40,8 +40,8 @@ you need:
   Germany: Avenue Road 12, 45678 Deville
   Latvia: Avenue Road 12, Deville, 45678
 
-It gets more complicated with 100 countries and dozens more address
-components to consider.
+It gets more complicated with 200+ countries and territories and dozens more 
+address components to consider.
 
 This module comes with a minimal configuration to run tests. Instead of
 developing your own configuration please use (and contribute to)
@@ -60,7 +60,7 @@ Together we can address the world!
   my $components = { ... }
   my $text = $GAF->format_address($components, { country => 'FR' } );
 
-=method new
+=head2 new
 
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
 
