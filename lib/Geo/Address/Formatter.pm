@@ -16,6 +16,7 @@ use Try::Tiny;
 use YAML qw(Load LoadFile);
 use utf8;
 
+$Data::Dumper::Sortkeys = 1;
 my $THC = Text::Hogan::Compiler->new;
 my %THT_cache; # a place to store Text::Hogan::Template objects
 
@@ -59,6 +60,8 @@ Together we can address the world!
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
   my $components = { ... }
   my $text = $GAF->format_address($components, { country => 'FR' } );
+  # 
+  my $short_text = $GAF->format_address($components, { country => 'FR', abbreviate => 1, });
 
 =head2 new
 
@@ -145,9 +148,14 @@ sub _read_configuration {
 Given a structures address (hashref) and options (hashref) returns a
 formatted address.
 
-The only option you can set currently is 'country' which should
-be an uppercase ISO 3166-1 alpha-2 code, e.g. 'GB' for Great Britain.
-If ommited we try to find the country in the address components.
+Possible options you are: 
+
+    'country', which should be an uppercase ISO 3166-1:alpha-2 code
+    e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
+    If ommited we try to find the country in the address components.
+
+    'abbreviate', if supplied common abbreviations are applied
+    to the resulting output.
 
 =cut
 
@@ -156,6 +164,8 @@ sub format_address {
     my $rh_components = clone(shift) || return;
     my $rh_options = shift || {};
 
+    # deal with the options
+    # country
     my $cc = $rh_options->{country} 
             || $self->_determine_country_code($rh_components) 
             || '';
@@ -163,7 +173,9 @@ sub format_address {
     if ($cc){
         $rh_components->{country_code} = $cc;
     } 
-    #warn Dumper $rh_components;
+
+    # abbreviate
+    my $abbrv = $rh_options->{abbreviate} // 0;
 
     # set the aliases, unless this would overwrite something
     foreach my $alias (sort keys %{$self->{component_aliases}}){
@@ -204,9 +216,19 @@ sub format_address {
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);
     if (scalar(@$ra_unknown)){
-        $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
+        $rh_components->{attention} = 
+            join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
     #warn Dumper $rh_components;
+
+    #say "pre abbrv";
+    #say Dumper $rh_components;
+    if ($abbrv){
+        #say "abbreviate set, time to abbreviate";
+        $rh_components = $self->_abbreviate($rh_components);
+    }
+    #say "post abbrv";
+    #say Dumper $rh_components;
 
     # get a compiled template
     if (!defined($THT_cache{$template_text})){
@@ -219,9 +241,12 @@ sub format_address {
     $text = $self->_render_template($compiled_template, $rh_components);
     $text = $self->_postformat($text,$rh_config->{postformat_replace});
     $text = $self->_clean($text);
+
+    # all done
     return $text;
 }
 
+# remove duplicates ("Berlin, Berlin"), do replacements and similar
 sub _postformat {
     my $self      = shift;
     my $text      = shift;
@@ -463,8 +488,13 @@ sub _apply_replacements {
     return $rh_components;
 }
 
-# " abc,,def , ghi " => 'abc, def, ghi'
+sub _abbreviate {
+    my $self = shift;
+    my $rh_comp = shift // return;
+    return $rh_comp;
+}
 
+# " abc,,def , ghi " => 'abc, def, ghi'
 sub _clean {
     my $self = shift;
     my $out  = shift // return;
