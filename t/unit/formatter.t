@@ -10,7 +10,7 @@ use Text::Hogan::Compiler;
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
 
-my $path = dirname(__FILE__) . '/test_conf1';
+my $path = dirname(__FILE__) . '/test_conf-general';
 my $GAF = $CLASS->new( conf_path => $path );
 
 {

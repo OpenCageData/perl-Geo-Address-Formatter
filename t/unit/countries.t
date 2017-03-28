@@ -27,7 +27,7 @@ ok(scalar(@files), 'found at least one file');
 my $CLASS = 'Geo::Address::Formatter';
 use_ok($CLASS);
 
-my $conf_path = dirname(__FILE__) . '/test_conf1';
+my $conf_path = dirname(__FILE__) . '/test_conf-general';
 my $GAF = $CLASS->new( conf_path => $conf_path );
 
 sub _one_testcase {
