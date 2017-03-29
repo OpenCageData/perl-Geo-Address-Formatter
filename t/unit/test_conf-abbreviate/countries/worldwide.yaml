@@ -16,6 +16,5 @@ US:
     address_template: *generic4 
     postformat_replace:
         - ["\nUS$","\nUnited States of America"]
-        - ["\nUSA$","\nUnited States of America"]
         - ["\nUnited States$","\nUnited States of America"]
 

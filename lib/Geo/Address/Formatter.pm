@@ -135,9 +135,27 @@ sub _read_configuration {
             $self->{state_codes} = $rh_c;
         }
         catch {
-            warn "error parsing component configuration: $_";
+            warn "error parsing state codes configuration: $_";
         };
     }
+
+    # get the abbreviations
+    #
+    # for now hard coded just for US
+    # TODO: map the languages to countries
+    #
+    my $abbrv_file = $path . '/abbreviations/en.yaml';
+    $self->{abbreviations} = {};   
+    if ( -e $abbrv_file){
+        try {
+            my $rh_c = LoadFile($abbrv_file);
+            $self->{abbreviations}->{'US'} = $rh_c;
+        }
+        catch {
+            warn "error parsing abbreviation configuration: $_";
+        };
+    }
+
     return;
 }
 
@@ -219,16 +237,10 @@ sub format_address {
         $rh_components->{attention} = 
             join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
-    #warn Dumper $rh_components;
 
-    #say "pre abbrv";
-    #say Dumper $rh_components;
     if ($abbrv){
-        #say "abbreviate set, time to abbreviate";
         $rh_components = $self->_abbreviate($rh_components);
     }
-    #say "post abbrv";
-    #say Dumper $rh_components;
 
     # get a compiled template
     if (!defined($THT_cache{$template_text})){
@@ -491,6 +503,30 @@ sub _apply_replacements {
 sub _abbreviate {
     my $self = shift;
     my $rh_comp = shift // return;
+    #say Dumper $self->{abbreviations};
+    #say Dumper $rh_comp;
+
+    # do we have now the country?
+    if (!defined($rh_comp->{country_code})){
+        warn "unable to determine country, thus unable to abbreviate";
+        return;
+    }
+
+    # do we have abbreviations for this country?    
+    my $cc = $rh_comp->{country_code};
+    if (!defined($self->{abbreviations}->{$cc})){ 
+        warn "no abbreviations defined for $cc";
+        return;
+    } 
+
+    my $rh_abbr = $self->{abbreviations}->{$cc};
+    foreach my $comp_name (keys %$rh_abbr){
+        next if (!defined($rh_comp->{$comp_name}));
+        foreach my $long (keys %{$rh_abbr->{$comp_name}}){
+            my $short = $rh_abbr->{$comp_name}->{$long};
+            $rh_comp->{$comp_name} =~ s/\b$long\b/$short/;
+        }
+    }
     return $rh_comp;
 }
 
