@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.59   2017-03-29
+       - support 'abbreviate' option
+       - newest address-formatting templates
+
 1.58   2016-07-26
        - deal with postcode ranges like '68100, 68200' which it seems are not
          uncommon in OSM
