@@ -1,7 +1,7 @@
 Revision history for Perl module Geo::Address::Formatter.
 
 1.59   2017-03-29
-       - support 'abbreviate' option
+       - support 'abbreviate' option (though for US only for now)
        - newest address-formatting templates
 
 1.58   2016-07-26
