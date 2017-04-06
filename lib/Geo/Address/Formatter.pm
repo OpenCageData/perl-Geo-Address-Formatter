@@ -127,35 +127,39 @@ sub _read_configuration {
         warn "error parsing component configuration: $_";
     };
 
-    # get the state codes
-    $self->{state_codes} = {};
-    if ( -e $path . '/state_codes.yaml'){
-        try {
-            my $rh_c = LoadFile($path . '/state_codes.yaml');
-            $self->{state_codes} = $rh_c;
+    # get the state codes and country2lang conf
+    my @conf_files = qw(state_codes country2lang);
+    foreach my $cfile (@conf_files){
+        
+        $self->{$cfile} = {};
+        my $yfile = $path . '/' . $cfile . '.yaml';
+        if ( -e $yfile){
+            try {
+                $self->{$cfile} = LoadFile($yfile);
+            }
+            catch {
+                warn "error parsing $cfile configuration: $_";
+            };
         }
-        catch {
-            warn "error parsing state codes configuration: $_";
-        };
     }
 
     # get the abbreviations
-    #
-    # for now hard coded just for US
-    # TODO: map the languages to countries
-    #
-    my $abbrv_file = $path . '/abbreviations/en.yaml';
-    $self->{abbreviations} = {};   
-    if ( -e $abbrv_file){
+    my @abbrv_filenames = 
+        File::Find::Rule->file()->name( '*.yaml' )->in($path.'/abbreviations');
+
+    # read the config files
+    foreach my $abbrv_file ( @abbrv_filenames ){
         try {
-            my $rh_c = LoadFile($abbrv_file);
-            $self->{abbreviations}->{'US'} = $rh_c;
+            if ($abbrv_file =~ m/\/(\w\w)\.yaml$/){
+                my $lang = $1;  # two letter lang code like 'en'
+                my $rh_c = LoadFile($abbrv_file);
+                $self->{abbreviations}->{$lang} = $rh_c; 
+            }
         }
         catch {
-            warn "error parsing abbreviation configuration: $_";
+            warn "error parsing abbrv configuration in $abbrv_file: $_";
         };
     }
-
     return;
 }
 
@@ -210,9 +214,6 @@ sub format_address {
     # determine the template
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     my $template_text = $rh_config->{address_template};
-
-    #print STDERR "cc $cc\n";
-    #print STDERR "comp " . Dumper $rh_components;
 
     # do we have the minimal components for an address?
     # or should we instead use the fallback template?
@@ -503,30 +504,39 @@ sub _apply_replacements {
 sub _abbreviate {
     my $self = shift;
     my $rh_comp = shift // return;
-    #say Dumper $self->{abbreviations};
-    #say Dumper $rh_comp;
 
-    # do we have now the country?
+    # do we the country?
     if (!defined($rh_comp->{country_code})){
         warn "unable to determine country, thus unable to abbreviate";
         return;
     }
 
-    # do we have abbreviations for this country?    
-    my $cc = $rh_comp->{country_code};
-    if (!defined($self->{abbreviations}->{$cc})){ 
-        warn "no abbreviations defined for $cc";
-        return;
-    } 
+    # do we have abbreviations for this country?
+    my $cc = uc($rh_comp->{country_code});
+    
+    # 1. which languages?
+    if (defined($self->{country2lang}{$cc})){
 
-    my $rh_abbr = $self->{abbreviations}->{$cc};
-    foreach my $comp_name (keys %$rh_abbr){
-        next if (!defined($rh_comp->{$comp_name}));
-        foreach my $long (keys %{$rh_abbr->{$comp_name}}){
-            my $short = $rh_abbr->{$comp_name}->{$long};
-            $rh_comp->{$comp_name} =~ s/\b$long\b/$short/;
+        my @langs = split(/,/,$self->{country2lang}{$cc});
+
+        foreach my $lang (@langs){
+            # do we have abbrv for this lang?
+            if (defined($self->{abbreviations}->{$lang})){
+
+                my $rh_abbr = $self->{abbreviations}->{$lang};
+                foreach my $comp_name (keys %$rh_abbr){
+                    next if (!defined($rh_comp->{$comp_name}));
+                    foreach my $long (keys %{$rh_abbr->{$comp_name}}){
+                        my $short = $rh_abbr->{$comp_name}->{$long};
+                        $rh_comp->{$comp_name} =~ s/\b$long\b/$short/;
+                    }
+                }
+            } else {
+                #warn "no abbreviations defined for lang $lang";
+            }
         }
     }
+
     return $rh_comp;
 }
 

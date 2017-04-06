@@ -11,7 +11,19 @@ generic4: &generic4 |
         {{#first}} {{{city}}} || {{{town}}} || {{{state_district}}} || {{{village}}} {{/first}}, {{#first}} {{{state_code}}} || {{{state}}} {{/first}} {{{postcode}}}
         {{{country}}}
 
-# USA
+generic15: &generic15 |
+        {{{attention}}}
+        {{{house}}}
+        {{{road}}}, {{{house_number}}}
+        {{{postcode}}} {{#first}} {{{city}}} || {{{town}}} || {{{village}}} || {{{state}}} || {{{county}}} {{/first}}
+        {{{country}}}
+
+ES:
+    address_template: *generic15
+
+CA: 
+    address_template: *generic4
+
 US: 
     address_template: *generic4 
     postformat_replace:
