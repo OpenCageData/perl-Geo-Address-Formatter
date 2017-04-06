@@ -160,6 +160,8 @@ sub _read_configuration {
             warn "error parsing abbrv configuration in $abbrv_file: $_";
         };
     }
+    #say Dumper $self->{abbreviations};
+    #say Dumper $self->{country2lang};    
     return;
 }
 

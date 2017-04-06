@@ -7,9 +7,10 @@
 # countries with multiple languages should be a comma seperated list
 # Example: ES: ca,es,eu,gl
 #
-AT: de
-AU: en
-CA: en
+AD: ca
+AT: de 
+AU: en 
+CA: en,fr
 DE: de
 ES: ca,es,eu,gl
 GB: en
