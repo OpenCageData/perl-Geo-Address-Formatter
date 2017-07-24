@@ -296,8 +296,10 @@ sub _postformat {
                 if ($text =~ m/$regexp/){
                     my $tmp1 = $1;
                     my $tmp2 = $2;
+                    my $tmp3 = $3;
                     $replacement =~ s/\$1/$tmp1/;
                     $replacement =~ s/\$2/$tmp2/;
+                    $replacement =~ s/\$3/$tmp3/;
                 }
             }
             $text =~ s/$regexp/$replacement/;
