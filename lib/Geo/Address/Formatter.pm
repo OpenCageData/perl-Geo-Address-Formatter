@@ -573,6 +573,8 @@ sub _clean {
     $out =~ s/[\},\s]+$//;
     $out =~ s/^[,\s]+//;
 
+    $out =~ s/^- //;  # line starting with dash due to a parameter missing
+
     $out =~ s/,\s*,/, /g; # multiple commas to one   
     $out =~ s/\h+,\h+/, /g; # one horiz whitespace behind comma
     $out =~ s/\h\h+/ /g;  # multiple horiz whitespace to one
