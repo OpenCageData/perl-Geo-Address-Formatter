@@ -69,7 +69,7 @@ my $GAF = $CLASS->new( conf_path => $path );
         'state'         => 'California',
         'country'       => 'United States',
     };
-    my $out = 
+    my $out =
         $GAF->format_address($rh_components,{country => 'US', abbreviate => 1});
     is($out,
        '301 Hamilton Ave
@@ -91,9 +91,9 @@ USA
             "postcode" => "V6K",
             "road" => "Cornwall Avenue",
             "state" => "British Columbia",
-            "suburb" => "Kitsilano"    
+            "suburb" => "Kitsilano",
     };
-    my $out = 
+    my $out =
         $GAF->format_address($rh_components,{abbreviate => 1});
     is($out,
        'Cornwall Ave
@@ -117,9 +117,9 @@ Canada
             "postcode" => "08017",
             "road" => "Carrer de Calatrava",
             "state" => "Catalonia",
-            "suburb" => "les Tres Torres"    
+            "suburb" => "les Tres Torres",   
     };
-    my $out = 
+    my $out =
         $GAF->format_address($rh_components,{abbreviate => 1});
     is($out,
        'C Calatrava, 68

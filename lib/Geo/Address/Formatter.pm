@@ -36,31 +36,31 @@ For example, you have:
 
 you need:
 
-  Great Britain: 12 Avenue Road, Deville 45678  
+  Great Britain: 12 Avenue Road, Deville 45678
   France: 12 Avenue Road, 45678 Deville
   Germany: Avenue Road 12, 45678 Deville
   Latvia: Avenue Road 12, Deville, 45678
 
-It gets more complicated with 200+ countries and territories and dozens more 
+It gets more complicated with 200+ countries and territories and dozens more
 address components to consider.
 
 This module comes with a minimal configuration to run tests. Instead of
 developing your own configuration please use (and contribute to)
-those in https://github.com/OpenCageData/address-formatting 
-which includes test cases. 
+those in https://github.com/OpenCageData/address-formatting
+which includes test cases.
 
 Together we can address the world!
 
 =head1 SYNOPSIS
 
   #
-  # get the templates (or use your own) 
+  # get the templates (or use your own)
   # git clone git@github.com:OpenCageData/address-formatting.git
-  # 
+  #
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
   my $components = { ... }
   my $text = $GAF->format_address($components, { country => 'FR' } );
-  # 
+  #
   my $short_text = $GAF->format_address($components, { country => 'FR', abbreviate => 1, });
 
 =head2 new
@@ -73,11 +73,11 @@ Returns one instance. The conf_path is required.
 
 sub new {
     my ($class, %params) = @_;
-    
+
     my $self = {};
     my $conf_path = $params{conf_path} || die "no conf_path set";
     bless( $self, $class );
-    
+
     $self->_read_configuration($conf_path);
     return $self;
 }
@@ -86,7 +86,7 @@ sub _read_configuration {
     my $self = shift;
     my $path = shift;
 
-    my @a_filenames = 
+    my @a_filenames =
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/countries');
 
     $self->{templates} = {};
@@ -120,7 +120,7 @@ sub _read_configuration {
                 }
             }
         }
-        $self->{ordered_components} = 
+        $self->{ordered_components} =
             [ map { $_->{name} => ($_->{aliases} ? @{$_->{aliases}} : ()) } @c];
     }
     catch {
@@ -130,7 +130,6 @@ sub _read_configuration {
     # get the state codes and country2lang conf
     my @conf_files = qw(state_codes country2lang);
     foreach my $cfile (@conf_files){
-        
         $self->{$cfile} = {};
         my $yfile = $path . '/' . $cfile . '.yaml';
         if ( -e $yfile){
@@ -144,7 +143,7 @@ sub _read_configuration {
     }
 
     # get the abbreviations
-    my @abbrv_filenames = 
+    my @abbrv_filenames =
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/abbreviations');
 
     # read the config files
@@ -153,7 +152,7 @@ sub _read_configuration {
             if ($abbrv_file =~ m/\/(\w\w)\.yaml$/){
                 my $lang = $1;  # two letter lang code like 'en'
                 my $rh_c = LoadFile($abbrv_file);
-                $self->{abbreviations}->{$lang} = $rh_c; 
+                $self->{abbreviations}->{$lang} = $rh_c;
             }
         }
         catch {
@@ -161,7 +160,7 @@ sub _read_configuration {
         };
     }
     #say Dumper $self->{abbreviations};
-    #say Dumper $self->{country2lang};    
+    #say Dumper $self->{country2lang};
     return;
 }
 
@@ -172,7 +171,7 @@ sub _read_configuration {
 Given a structures address (hashref) and options (hashref) returns a
 formatted address.
 
-Possible options you are: 
+Possible options you are:
 
     'country', which should be an uppercase ISO 3166-1:alpha-2 code
     e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
@@ -190,13 +189,13 @@ sub format_address {
 
     # deal with the options
     # country
-    my $cc = $rh_options->{country} 
-            || $self->_determine_country_code($rh_components) 
+    my $cc = $rh_options->{country}
+            || $self->_determine_country_code($rh_components)
             || '';
 
     if ($cc){
         $rh_components->{country_code} = $cc;
-    } 
+    }
 
     # abbreviate
     my $abbrv = $rh_options->{abbreviate} // 0;
@@ -206,12 +205,12 @@ sub format_address {
 
         if (defined($rh_components->{$alias})
             && !defined($rh_components->{$self->{component_aliases}->{$alias}})
-        ){     
-            $rh_components->{$self->{component_aliases}->{$alias}} = 
+        ){
+            $rh_components->{$self->{component_aliases}->{$alias}} =
                 $rh_components->{$alias};
         }
     }
-    $self->_sanity_cleaning($rh_components); 
+    $self->_sanity_cleaning($rh_components);
 
     # determine the template
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
@@ -237,7 +236,7 @@ sub format_address {
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);
     if (scalar(@$ra_unknown)){
-        $rh_components->{attention} = 
+        $rh_components->{attention} =
             join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
 
@@ -248,7 +247,7 @@ sub format_address {
     # get a compiled template
     if (!defined($THT_cache{$template_text})){
         $THT_cache{$template_text} = $THC->compile($template_text, {'numeric_string_as_string' => 1});
-    } 
+    }
     my $compiled_template = $THT_cache{$template_text};
 
     # render it
@@ -283,7 +282,7 @@ sub _postformat {
     # do any country specific rules
     foreach my $ra_fromto ( @$raa_rules ){
         try {
-            my $regexp = qr/$ra_fromto->[0]/;            
+            my $regexp = qr/$ra_fromto->[0]/;
             #say STDERR 'text: ' . $text;
             #say STDERR 're: ' . $regexp;
             my $replacement = $ra_fromto->[1];
@@ -357,7 +356,7 @@ my %valid_replacement_components = (
 );
 
 # determines which country code to use
-# may also override other configuration if we are dealing with 
+# may also override other configuration if we are dealing with
 # a dependent territory
 sub _determine_country_code {
     my $self          = shift;
@@ -372,9 +371,9 @@ sub _determine_country_code {
         return if ( $cc !~ m/^[a-z][a-z]$/);
         return 'GB' if ($cc eq 'uk');
 
-        $cc = uc($cc); 
+        $cc = uc($cc);
 
-        # check if the configuration tells us to use 
+        # check if the configuration tells us to use
         # the configuration of another country
         # used in cases of dependent territories like
         # American Samoa (AS) and Puerto Rico (PR)
@@ -395,7 +394,7 @@ sub _determine_country_code {
                     }
                 }
                 $rh_components->{country} = $new_country;
-            } 
+            }
             if (defined( $self->{templates}{$old_cc}{add_component} )){
                 my $tmp = $self->{templates}{$old_cc}{add_component};
                 my ($k,$v) = split(/=/,$tmp);
@@ -403,7 +402,7 @@ sub _determine_country_code {
                 if (defined( $valid_replacement_components{$k} )){
                     $rh_components->{$k} = $v;
                 }
-            } 
+            }
         }
 
 #        warn "cc $cc";
@@ -483,7 +482,7 @@ sub _add_state_code {
                 }
             }
         }
-    }    
+    }
     return $rh_components->{state_code};
 }
 
@@ -503,10 +502,10 @@ sub _apply_replacements {
             try {
                 # do key specific replacement
                 if ($ra_fromto->[0] =~ m/^$component=/){
-                    my $from = $ra_fromto->[0]; 
+                    my $from = $ra_fromto->[0];
                     $from =~ s/^$component=//;
                     if ($rh_components->{$component} eq $from){
-                        $rh_components->{$component} = $ra_fromto->[1]; 
+                        $rh_components->{$component} = $ra_fromto->[1];
                        }
                 } else {
 
@@ -572,7 +571,7 @@ sub _clean {
 
     $out =~ s/^- //;  # line starting with dash due to a parameter missing
 
-    $out =~ s/,\s*,/, /g; # multiple commas to one   
+    $out =~ s/,\s*,/, /g; # multiple commas to one
     $out =~ s/\h+,\h+/, /g; # one horiz whitespace behind comma
     $out =~ s/\h\h+/ /g;  # multiple horiz whitespace to one
     $out =~ s/\h\n/\n/g;  # horiz whitespace, newline to newline
@@ -590,7 +589,7 @@ sub _clean {
         $line =~s/^\h+//g;
         $line =~s/\h+$//g;
         $seen_lines{$line}++;
-        next if ($seen_lines{$line} > 1); 
+        next if ($seen_lines{$line} > 1);
         # now dedupe within the line
         my @before_words = split(/,/, $line);
         my %seen_words;
@@ -635,7 +634,7 @@ sub _render_template {
     # is it empty?
     if ($output !~ m/\w/){
         my @comps = sort keys %$components;
-        if (scalar(@comps) == 1){  
+        if (scalar(@comps) == 1){
             foreach my $k (@comps){
                 $output = $components->{$k};
             }
@@ -646,7 +645,7 @@ sub _render_template {
 
 # note: unsorted list because $cs is a hash!
 # returns []
-sub _find_unknown_components { 
+sub _find_unknown_components {
     my $self       = shift;
     my $components = shift;
 

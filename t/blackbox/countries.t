@@ -27,7 +27,7 @@ my $path = $af_path . '/testcases/';
 my $input_country;
 my $verbose = 0;
 
-GetOptions ( 
+GetOptions (
     'country:s'  => \$input_country,
     'verbose'    => \$verbose,
 );
@@ -55,8 +55,8 @@ if ( -d $path ){
     ok(-e $conffile, 'found worldwide conf file');
 
     # escaped parens and \d need to be double escaped for python
-    my $no_bad_parens = 1;    
-    open my $FH, "<:encoding(UTF-8)", $conffile 
+    my $no_bad_parens = 1;
+    open my $FH, "<:encoding(UTF-8)", $conffile
         or die "unable to open $conffile $!";
     while (my $line = <$FH>){
         next if ($line =~ m/^\s*#/);
@@ -83,16 +83,16 @@ if ( -d $path ){
 
         #warn "e1 $expected\n";
         #warn "a1 $actual\n";
-        if (0) { # turn on for char by char comparison 
+        if (0) { # turn on for char by char comparison
             my @e = (split//, $expected);
-            my @a = (split//, $actual); 
+            my @a = (split//, $actual);
             my $c = 0;
             foreach my $char (@e){
                 if ($e[$c] eq $a[$c]){
                     warn "same $c same $a[$c]";
                 } else {
                     warn "not same $c " . $e[$c] . ' ' . $a[$c] . "\n";
-                } 
+                }
                 $c++;
             }
             #$expected =~ s/\n/, /g;
@@ -116,7 +116,7 @@ if ( -d $path ){
         if (defined($input_country) && $input_country){
             if ($country ne $input_country){
                 if ($verbose){
-                    warn "skipping $country tests";     
+                    warn "skipping $country tests";
                 }
                 next;
             }
