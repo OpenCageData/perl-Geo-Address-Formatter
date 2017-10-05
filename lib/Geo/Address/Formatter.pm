@@ -305,7 +305,7 @@ sub _postformat {
             $text =~ s/$regexp/$replacement/;
         }
         catch {
-            warn "invalid replacement: " . join(', ', @$ra_fromto)
+            warn "invalid replacement: " . join(', ', @$ra_fromto);
         };
     }
     return $text;
@@ -314,7 +314,7 @@ sub _postformat {
 sub _sanity_cleaning {
     my $self = shift;
     my $rh_components = shift || return;
-    
+
     if ( defined($rh_components->{'postcode'}) ){
 
         if ( length($rh_components->{'postcode'}) > 20){
@@ -326,7 +326,7 @@ sub _sanity_cleaning {
         }
         elsif ($rh_components->{'postcode'} =~ m/^(\d{5}),\d{5}/){
             $rh_components->{'postcode'} = $1;
-        }        
+        }
     }
 
     # catch values containing URLs
@@ -343,7 +343,7 @@ sub _minimal_components {
     my $rh_components = shift || return;
     my @required_components = qw(road postcode); #FIXME - should be in conf
     my $missing = 0;  # number of required components missing
-  
+
     my $minimal_threshold = 2;
     foreach my $c (@required_components){
         $missing++ if (!defined($rh_components->{$c}));
@@ -394,8 +394,7 @@ sub _determine_country_code {
                         $new_country =~ s/\$$component//;
                     }
                 }
-                $rh_components->{country} = $new_country; 
-                    
+                $rh_components->{country} = $new_country;
             } 
             if (defined( $self->{templates}{$old_cc}{add_component} )){
                 my $tmp = $self->{templates}{$old_cc}{add_component};
@@ -442,7 +441,7 @@ sub _fix_country {
         if (defined($rh_components->{state}) ){
             if (looks_like_number($rh_components->{country})){
                 $rh_components->{country} = $rh_components->{state};
-                delete $rh_components->{state}
+                delete $rh_components->{state};
             }
         }
     }
@@ -478,15 +477,13 @@ sub _add_state_code {
                     foreach ( keys %$mapping ){
                         if ( uc($state) eq uc($mapping->{$_}) ){
                             $rh_components->{state_code} = $_;
-                            last;                            
-                        }               
-                    }     
+                            last;
+                        }
+                    }
                 }
             }
         }
-        
-    }
-    
+    }    
     return $rh_components->{state_code};
 }
 
@@ -518,7 +515,7 @@ sub _apply_replacements {
                 }
             }
             catch {
-                warn "invalid replacement: " . join(', ', @$ra_fromto)
+                warn "invalid replacement: " . join(', ', @$ra_fromto);
             };
         }
     }
@@ -537,7 +534,7 @@ sub _abbreviate {
 
     # do we have abbreviations for this country?
     my $cc = uc($rh_comp->{country_code});
-    
+
     # 1. which languages?
     if (defined($self->{country2lang}{$cc})){
 
@@ -630,7 +627,7 @@ sub _render_template {
         my $selected = first { length($_) } split(/\s*\|\|\s*/, $newtext);
         return $selected;
     };
-    
+
     my $output = $THTemplate->render($context);
     #warn "in _render pre _clean $output";
     $output = $self->_clean($output);
