@@ -141,7 +141,7 @@ sub _read_configuration {
             };
         }
     }
-    
+
     # get the abbreviations
     my @abbrv_filenames =
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/abbreviations');
@@ -481,7 +481,7 @@ sub _add_code {
 
         foreach ( keys %$mapping ){
             if ( uc($rh_components->{$keyname}) eq uc($mapping->{$_}) ){
-                $rh_components->{$code} = $_; 
+                $rh_components->{$code} = $_;
                 last;
             }
         }
