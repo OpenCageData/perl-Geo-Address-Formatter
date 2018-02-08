@@ -7,6 +7,7 @@ use warnings;
 use feature qw(say);
 use Clone qw(clone);
 use Data::Dumper;
+$Data::Dumper::Sortkeys = 1;
 use File::Basename qw(dirname);
 use File::Find::Rule;
 use List::Util qw(first);
@@ -16,7 +17,6 @@ use Try::Tiny;
 use YAML qw(Load LoadFile);
 use utf8;
 
-$Data::Dumper::Sortkeys = 1;
 my $THC = Text::Hogan::Compiler->new;
 my %THT_cache; # a place to store Text::Hogan::Template objects
 
@@ -127,8 +127,8 @@ sub _read_configuration {
         warn "error parsing component configuration: $_";
     };
 
-    # get the state codes and country2lang conf
-    my @conf_files = qw(state_codes country2lang);
+    # get the county and state codes and country2lang conf
+    my @conf_files = qw(county_codes state_codes country2lang);
     foreach my $cfile (@conf_files){
         $self->{$cfile} = {};
         my $yfile = $path . '/' . $cfile . '.yaml';
@@ -141,7 +141,7 @@ sub _read_configuration {
             };
         }
     }
-
+    
     # get the abbreviations
     my @abbrv_filenames =
         File::Find::Rule->file()->name( '*.yaml' )->in($path.'/abbreviations');
@@ -232,6 +232,9 @@ sub format_address {
     $self->_fix_country($rh_components);
     $self->_apply_replacements($rh_components, $rh_config->{replace});
     $self->_add_state_code($rh_components);
+    $self->_add_county_code($rh_components);
+
+    #say Dumper $rh_components;
 
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);
@@ -451,39 +454,57 @@ sub _fix_country {
 sub _add_state_code {
     my $self          = shift;
     my $rh_components = shift;
+    return $self->_add_code('state', $rh_components);
+}
 
-    return if $rh_components->{state_code};
-    return if !$rh_components->{state};
-    return if !$rh_components->{country_code};
+sub _add_county_code {
+    my $self          = shift;
+    my $rh_components = shift;
+    return $self->_add_code('county', $rh_components);
+}
+
+sub _add_code {
+    my $self = shift;
+    my $keyname = shift // return;
+    my $rh_components = shift;
+
+    return if !$rh_components->{country_code};  # de we know country?
+    return if !$rh_components->{$keyname};      # do we know state/county
+
+    my $code = $keyname . '_code';              # do we already have code?
+    return if $rh_components->{$code};
+
     # ensure it is uppercase
     $rh_components->{country_code} = uc($rh_components->{country_code});
 
-    if ( my $mapping = $self->{state_codes}{$rh_components->{country_code}} ){
+    if ( my $mapping = $self->{$code . 's'}{$rh_components->{country_code}}){
 
         foreach ( keys %$mapping ){
-            if ( uc($rh_components->{state}) eq uc($mapping->{$_}) ){
-                $rh_components->{state_code} = $_;
+            if ( uc($rh_components->{$keyname}) eq uc($mapping->{$_}) ){
+                $rh_components->{$code} = $_; 
                 last;
             }
         }
 
         # try again for odd variants like "United States Virgin Islands"
-        if (!defined($rh_components->{state_code})){
-            if ($rh_components->{country_code} eq 'US'){
-                if ($rh_components->{state} =~ m/^united states/i){
-                    my $state = $rh_components->{state};
-                    $state =~ s/^United States/US/i;
-                    foreach ( keys %$mapping ){
-                        if ( uc($state) eq uc($mapping->{$_}) ){
-                            $rh_components->{state_code} = $_;
-                            last;
+        if ($keyname eq 'state'){
+            if (!defined($rh_components->{state_code})){
+                if ($rh_components->{country_code} eq 'US'){
+                    if ($rh_components->{state} =~ m/^united states/i){
+                        my $state = $rh_components->{state};
+                        $state =~ s/^United States/US/i;
+                        foreach ( keys %$mapping ){
+                            if ( uc($state) eq uc($_) ){
+                                $rh_components->{state_code} = $mapping->{$_};
+                                last;
+                            }
                         }
                     }
                 }
             }
         }
     }
-    return $rh_components->{state_code};
+    return $rh_components->{$code};
 }
 
 sub _apply_replacements {
