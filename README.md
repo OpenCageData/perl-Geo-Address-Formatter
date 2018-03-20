@@ -22,7 +22,7 @@ To fetch the latest templates available use
 See also: <http://git-scm.com/book/en/Git-Tools-Submodules>
 
 To submit new countries/territories please see the details in the
-[address-formatting repository](https://github.com/opencagedata/address-formatting), 
+[address-formatting repository](https://github.com/opencagedata/address-formatting),
 this module just processes the templates
 
 ### DEVELOPMENT
