@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter.svg?branch=master)](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter)
+[![Build Status](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter.svg?branch=master)](https://travis-ci.org/OpenCageData/perl-Geo-Address-Formatter) [![Kritika Analysis Status](https://kritika.io/users/freyfogle/repos/4975169572151338/heads/master/status.svg)](https://kritika.io/users/freyfogle/repos/4975169572151338/heads/master/)
 
 # perl-Geo-Address-Formatter
 
