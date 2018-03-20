@@ -41,7 +41,7 @@ To submit new countries/territories please see the details in the
 
 ### COPYRIGHT AND LICENCE
 
-Copyright 2014-2017 Opencage Data Ltd <cpan@opencagedata.com>
+Copyright 2014-2018 Opencage Data Ltd <cpan@opencagedata.com>
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.10 or,
