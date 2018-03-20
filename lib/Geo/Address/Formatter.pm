@@ -18,7 +18,7 @@ use YAML qw(Load LoadFile);
 use utf8;
 
 my $THC = Text::Hogan::Compiler->new;
-my %THT_cache; # a place to store Text::Hogan::Template objects
+my %THT_CACHE; # a place to store Text::Hogan::Template objects
 
 =head1 DESCRIPTION
 
@@ -248,10 +248,10 @@ sub format_address {
     }
 
     # get a compiled template
-    if (!defined($THT_cache{$template_text})){
-        $THT_cache{$template_text} = $THC->compile($template_text, {'numeric_string_as_string' => 1});
+    if (!defined($THT_CACHE{$template_text})){
+        $THT_CACHE{$template_text} = $THC->compile($template_text, {'numeric_string_as_string' => 1});
     }
-    my $compiled_template = $THT_cache{$template_text};
+    my $compiled_template = $THT_CACHE{$template_text};
 
     # render it
     my $text;
@@ -636,7 +636,7 @@ sub _clean {
 
 sub _render_template {
     my $self       = shift;
-    my $THTemplate = shift;
+    my $thtemplate = shift;
     my $components = shift;
 
     # Mustache calls it context
@@ -648,7 +648,7 @@ sub _render_template {
         return $selected;
     };
 
-    my $output = $THTemplate->render($context);
+    my $output = $thtemplate->render($context);
     #warn "in _render pre _clean $output";
     $output = $self->_clean($output);
 
