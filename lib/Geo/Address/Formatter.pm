@@ -493,9 +493,9 @@ sub _add_code {
                     if ($rh_components->{state} =~ m/^united states/i){
                         my $state = $rh_components->{state};
                         $state =~ s/^United States/US/i;
-                        foreach ( keys %$mapping ){
-                            if ( uc($state) eq uc($_) ){
-                                $rh_components->{state_code} = $mapping->{$_};
+                        foreach my $k ( keys %$mapping ){
+                            if ( uc($state) eq uc($k) ){
+                                $rh_components->{state_code} = $mapping->{$k};
                                 last;
                             }
                         }
