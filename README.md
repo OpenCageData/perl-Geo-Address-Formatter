@@ -10,7 +10,7 @@ It is meant to run against a set of configuration and test cases in
 
 The address-formatting repository is added as a [git submodule](http://git-scm.com/book/en/Git-Tools-Submodules). It is
 versioned, that means it won't automatically update when you run `git
-pull`. To point it to a newer version of the configuration run 
+pull`. To point it to a newer version of the configuration run
 
 1. `git submodule init`
 2. `git submodule update`
@@ -22,7 +22,8 @@ To fetch the latest templates available use
 See also: <http://git-scm.com/book/en/Git-Tools-Submodules>
 
 To submit new countries/territories please see the details in the
-[address-formatting repository](https://github.com/opencagedata/address-formatting), this module just processes the templates
+[address-formatting repository](https://github.com/opencagedata/address-formatting), 
+this module just processes the templates
 
 ### DEVELOPMENT
 
