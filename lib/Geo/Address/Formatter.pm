@@ -546,7 +546,7 @@ sub _abbreviate {
     my $self = shift;
     my $rh_comp = shift // return;
 
-    # do we the country?
+    # do we know the country?
     if (!defined($rh_comp->{country_code})){
         warn "unable to determine country, thus unable to abbreviate";
         return;
