@@ -53,6 +53,6 @@ at your option, any later version of Perl 5 you may have available.
 ### YOU MAY ALSO ENJOY
 
 This module is in use on the [OpenCage
-Geocoder](http://geocoder.opencagedata.com/), converting lat,longs
+Geocoder](https://opencagedata.com), converting lat,longs
 into nicely formatted strings.
 Please give us a try if you have any geocoding needs.
