@@ -548,7 +548,11 @@ sub _abbreviate {
 
     # do we know the country?
     if (!defined($rh_comp->{country_code})){
-        warn "unable to determine country, thus unable to abbreviate";
+        my $error_msg = 'no country_code, unable to abbreviate';
+        if (defined($rh_comp->{country})){
+            $error_msg .= ' - country: ' . $rh_comp->{country};
+        }
+        warn $error_msg;
         return;
     }
 
