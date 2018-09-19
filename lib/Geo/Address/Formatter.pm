@@ -451,6 +451,7 @@ sub _fix_country {
 }
 
 # sets and returns a state code
+# note may also set other values in some odd edge cases
 sub _add_state_code {
     my $self          = shift;
     my $rh_components = shift;
@@ -502,10 +503,9 @@ sub _add_code {
                     }
                     if ($rh_components->{state} =~ m/^washington,? d\.?c\.?/i){
                         $rh_components->{state_code} = 'DC';
+                        $rh_components->{state} = 'District of Columbia';
                         $rh_components->{city} = 'Washington';
                     }
-
-                    
                 }
             }
         }
