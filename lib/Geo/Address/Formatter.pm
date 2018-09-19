@@ -500,6 +500,12 @@ sub _add_code {
                             }
                         }
                     }
+                    if ($rh_components->{state} =~ m/^washington,? d\.?c\.?/i){
+                        $rh_components->{state_code} = 'DC';
+                        $rh_components->{city} = 'Washington';
+                    }
+
+                    
                 }
             }
         }
