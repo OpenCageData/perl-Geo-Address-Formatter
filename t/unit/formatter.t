@@ -97,3 +97,5 @@ my $GAF = $CLASS->new( conf_path => $path );
 
 
 done_testing();
+
+1;
