@@ -470,15 +470,16 @@ sub _add_code {
     my $keyname = shift // return;
     my $rh_components = shift;
     return if !$rh_components->{country_code};  # de we know country?
-    return if !$rh_components->{$keyname};      # do we know state/county
+    return if !$rh_components->{$keyname};      # do we know state/county?
 
-    my $code = $keyname . '_code';              # do we already have code?
-    if (defined($rh_components->{$code})){
+    my $code = $keyname . '_code';
+    if (defined($rh_components->{$code})){      # do we already have code?
+        # but could have situation where code and long name are same
+        # which we want to correct
         if ($rh_components->{$code} ne $rh_components->{$keyname}){
             return;
         }
     }
-
 
     
     # ensure country_code is uppercase as we use it as conf key

@@ -66,7 +66,16 @@ my $GAF = $CLASS->new( conf_path => $path );
   $GAF->_add_state_code($rh_comp2);
   is($rh_comp2->{state}, 'Puglia', 'corrected state to Puglia');
   is($rh_comp2->{state_code}, 'PUG', 'state_code is PUG');  
-  
+
+
+  # set state if only state_code supplied
+#  my $rh_comp3 = {
+#      country_code => 'IT',
+#      state_code   => 'PUG',
+#  };
+#  $GAF->_add_state_code($rh_comp3);
+#  is($rh_comp3->{state}, 'Puglia', 'corrected state to Puglia');
+#  is($rh_comp3->{state_code}, 'PUG', 'state_code is PUG');
 }
 
 {
