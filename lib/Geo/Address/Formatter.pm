@@ -234,8 +234,8 @@ sub format_address {
     $self->_add_state_code($rh_components);    
     $self->_add_county_code($rh_components);
     
-    say "after adding codes";
-    say Dumper $rh_components;
+    #say "after adding codes";
+    #say Dumper $rh_components;
 
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);

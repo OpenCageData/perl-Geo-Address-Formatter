@@ -78,6 +78,16 @@ my $GAF = $CLASS->new( conf_path => $path );
 #  is($rh_comp3->{state_code}, 'PUG', 'state_code is PUG');
 }
 
+{ # county code
+  my $rh_c = {
+      country_code => 'IT',
+      county       => 'RM',
+  };
+  $GAF->_add_county_code($rh_c);
+  is($rh_c->{county}, 'Roma', 'corrected county to Roma');
+  is($rh_c->{county_code}, 'RM', 'set county_code to RM');  
+}
+
 {
   my $components = {
     street => 'Hello World',
