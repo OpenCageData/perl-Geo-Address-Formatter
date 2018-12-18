@@ -473,7 +473,13 @@ sub _add_code {
     return if !$rh_components->{$keyname};      # do we know state/county
 
     my $code = $keyname . '_code';              # do we already have code?
-    return if $rh_components->{$code};
+    if (defined($rh_components->{$code})){
+        if ($rh_components->{$code} ne $rh_components->{$keyname}){
+            return;
+        }
+    }
+
+
     
     # ensure country_code is uppercase as we use it as conf key
     $rh_components->{country_code} = uc($rh_components->{country_code});
