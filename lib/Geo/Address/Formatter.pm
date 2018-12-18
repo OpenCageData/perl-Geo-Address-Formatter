@@ -231,10 +231,11 @@ sub format_address {
     # clean up the components
     $self->_fix_country($rh_components);
     $self->_apply_replacements($rh_components, $rh_config->{replace});
-    $self->_add_state_code($rh_components);
+    $self->_add_state_code($rh_components);    
     $self->_add_county_code($rh_components);
-
-    #say Dumper $rh_components;
+    
+    say "after adding codes";
+    say Dumper $rh_components;
 
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);
@@ -468,29 +469,46 @@ sub _add_code {
     my $self = shift;
     my $keyname = shift // return;
     my $rh_components = shift;
-
     return if !$rh_components->{country_code};  # de we know country?
     return if !$rh_components->{$keyname};      # do we know state/county
 
     my $code = $keyname . '_code';              # do we already have code?
     return if $rh_components->{$code};
-
-    # ensure it is uppercase
+    
+    # ensure country_code is uppercase as we use it as conf key
     $rh_components->{country_code} = uc($rh_components->{country_code});
+    my $cc = $rh_components->{country_code};
 
-    if ( my $mapping = $self->{$code . 's'}{$rh_components->{country_code}}){
+    if ( my $mapping = $self->{$code . 's'}{$cc}){
+        # say Dumper $mapping;
+        
+        foreach my $abbrv ( keys %$mapping ){
 
-        foreach ( keys %$mapping ){
-            if ( uc($rh_components->{$keyname}) eq uc($mapping->{$_}) ){
-                $rh_components->{$code} = $_;
+            my $name = $rh_components->{$keyname};
+            my $confname = $mapping->{$abbrv};
+            
+            if ( uc($name) eq uc($confname) ){
+                $rh_components->{$code} = $abbrv;
+                last;
+            }
+            # perhaps instead of passing in a name, we passed in a code
+            # example: state => 'NC'
+            # we want to turn that into
+            #     state => 'North Carolina'
+            #     state_code => 'NC'
+            #
+            if ( uc($name) eq $abbrv ){
+                $rh_components->{$keyname} = $confname;
+                $rh_components->{$code} = $abbrv;
                 last;
             }
         }
+        # didn't find a valid code or name
 
         # try again for odd variants like "United States Virgin Islands"
         if ($keyname eq 'state'){
             if (!defined($rh_components->{state_code})){
-                if ($rh_components->{country_code} eq 'US'){
+                if ($cc eq 'US'){
                     if ($rh_components->{state} =~ m/^united states/i){
                         my $state = $rh_components->{state};
                         $state =~ s/^United States/US/i;
