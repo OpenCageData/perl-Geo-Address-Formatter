@@ -60,7 +60,10 @@ Together we can address the world!
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
   my $components = { ... }
   my $text = $GAF->format_address($components, { country => 'FR' } );
+  my $rh_final_components = $GAF->final_components();
   #
+  # or if we want shorter output
+  # 
   my $short_text = $GAF->format_address($components, { country => 'FR', abbreviate => 1, });
 
 =head2 new
