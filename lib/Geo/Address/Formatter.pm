@@ -13,8 +13,8 @@ use File::Find::Rule;
 use List::Util qw(first);
 use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
-use Try::Tiny;
-use YAML qw(Load LoadFile);
+use Try::Catch;
+use YAML::XS qw(LoadFile);
 use utf8;
 
 my $THC = Text::Hogan::Compiler->new;
