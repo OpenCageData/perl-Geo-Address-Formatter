@@ -76,7 +76,7 @@ sub new {
 
     my $self = {};
     my $conf_path = $params{conf_path} || die "no conf_path set";
-    $self->{final_components};
+    $self->{final_components} = undef;
     bless( $self, $class );
 
     $self->_read_configuration($conf_path);
