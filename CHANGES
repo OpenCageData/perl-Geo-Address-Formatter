@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.70   2018-12-21
+       - new final_components method to get the final components after all
+         work has been done on it.
+       - some new tests
+
 1.69   2018-12-18
        - removed debugging
        - more tests for county_code
