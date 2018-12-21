@@ -135,6 +135,45 @@ my $GAF = $CLASS->new( conf_path => $path );
 }
 
 
+# actually do some formatting
+
+{
+    my $af_path = dirname(__FILE__) . '/../../address-formatting';
+    my $conf_path = $af_path . '/conf/';
+    my $GAF = $CLASS->new( conf_path => $conf_path );
+
+    my $rh_components = {
+        'country_code'  => 'US',
+        'house_number'  => '301',
+        'road'          => 'Northwestern University Road',
+        'neighbourhood' => 'Crescent Park',
+        'city'          => 'Palo Alto',
+        'postcode'      => '94303',
+        'county'        => 'Santa Clara County',
+        'state'         => 'California',
+        'country'       => 'United States',
+    };
+
+    # final_components not yet set, so this should cause a warning
+    warning_like {
+       $GAF->final_components(); 
+    } qr/not yet set/, 'got final_components warning';
+    
+    my $formatted = $GAF->format_address($rh_components);
+    $formatted =~ s/\n$//g; # remove from end
+    $formatted =~ s/\n/, /g; # turn into commas
+    
+    is(
+        $formatted,
+        '301 Northwestern University Road, Palo Alto, CA 94303, United States of America',
+        'correctly formatted components'
+        );
+
+    # now we can get the final_components    
+    my $rh_fincomp = $GAF->final_components();
+    is($rh_fincomp->{state_code}, 'CA', 'set state_code correctly');
+}
+
 done_testing();
 
 1;

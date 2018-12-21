@@ -76,6 +76,7 @@ sub new {
 
     my $self = {};
     my $conf_path = $params{conf_path} || die "no conf_path set";
+    $self->{final_components};
     bless( $self, $class );
 
     $self->_read_configuration($conf_path);
@@ -161,6 +162,24 @@ sub _read_configuration {
     }
     #say Dumper $self->{abbreviations};
     #say Dumper $self->{country2lang};
+    return;
+}
+
+=head2 final_components
+
+  my $rh_components = $GAF->final_components();
+
+returns a reference to a hash of the final components that are set at the
+completion of B<format_address>. Warns if called before they have been set.
+
+=cut
+
+sub final_components {
+    my $self = shift;
+    if (defined($self->{final_components})){
+        return $self->{final_components};
+    }
+    warn 'final_components not yet set';
     return;
 }
 
@@ -260,6 +279,9 @@ sub format_address {
     $text = $self->_postformat($text,$rh_config->{postformat_replace});
     $text = $self->_clean($text);
 
+    # set final components
+    $self->{final_components} = $rh_components;
+    
     # all done
     return $text;
 }
