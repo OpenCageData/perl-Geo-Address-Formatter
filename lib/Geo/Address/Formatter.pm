@@ -357,8 +357,19 @@ sub _sanity_cleaning {
         }
     }
 
+    # remove things that might be empty
+    foreach my $c (keys %$rh_components){
+        if (!defined ($rh_components->{$c})){
+            delete $rh_components->{$c};
+        }
+        if ($rh_components->{$c} !~ m/\w/){
+            delete $rh_components->{$c};
+        }
+    }
+
     # catch values containing URLs
     foreach my $c (keys %$rh_components){
+       
         if ($rh_components->{$c} =~ m|https?://|){
             delete $rh_components->{$c};
         }
