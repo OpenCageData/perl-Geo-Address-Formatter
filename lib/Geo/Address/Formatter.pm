@@ -124,8 +124,15 @@ sub _read_configuration {
                 }
             }
         }
-        $self->{ordered_components} =
-            [ map { $_->{name} => ($_->{aliases} ? @{$_->{aliases}} : ()) } @c];
+        foreach my $rh_c (@c){
+            push(@{ $self->{ordered_components} }, $rh_c->{name});
+            if ( defined($rh_c->{aliases}) ){
+                foreach my $alias (@{$rh_c->{aliases}}){
+                    push(@{ $self->{ordered_components} }, $alias);
+                }
+            }
+        }
+        #say Dumper $self->{ordered_components};
     }
     catch {
         warn "error parsing component configuration: $_";
