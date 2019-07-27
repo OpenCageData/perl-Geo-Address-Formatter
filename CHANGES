@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.78   2019-07-27
+       - force Clone 0.41 and seems 0.42 causes warnings
+       - newest address-formatting templates
+
 1.77   2019-07-26
        - change logic used to create ordered_components list
        - newest address-formatting templates
