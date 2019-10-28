@@ -1,6 +1,7 @@
 ---
 language: 'perl'
 perl:
+  - '5.30'
   - '5.28'
   - '5.26'
   - '5.24'
@@ -11,13 +12,21 @@ before_install:
   # https://docs.travis-ci.com/user/common-build-problems/#Git-Submodules-are-not-updated-correctly
   #
   # get the perl modules we need
-  # install dist development dependencies
+  #
+  # install dist development dependencies  
   - "cpanm Dist::Zilla"
   - "dzil authordeps | xargs cpanm"
   - "export tmpbuild=`mktemp --directory`"
   - "dzil build --in $tmpbuild"
+  # for reporting to coveralls.io
+  - "cpanm --quiet --notest Devel::Cover::Report::Coveralls"  
 install: "dzil listdeps | xargs cpanm"
-script: "dzil test --author"
+script:
+  - "dzil test --author"
+  - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrsv t  
+  - cover
+after_success:
+  - cover -report coveralls  
 notifications:
   email:
     on_failure: always
