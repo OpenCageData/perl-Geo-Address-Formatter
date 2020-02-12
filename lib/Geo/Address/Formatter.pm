@@ -369,7 +369,7 @@ sub _sanity_cleaning {
         if (!defined ($rh_components->{$c})){
             delete $rh_components->{$c};
         }
-        if ($rh_components->{$c} !~ m/\w/){
+        elsif ($rh_components->{$c} !~ m/\w/){
             delete $rh_components->{$c};
         }
     }
