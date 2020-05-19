@@ -27,22 +27,41 @@ use_ok($CLASS);
 
 my $GAF = $CLASS->new( conf_path => $conf_path );
 
-# is the correct state_code set in German?
-# 48.15101/11.58440
-my %input = (
-    "city"         => "Munich",
-    "country"      => "Deutschland",
-    "country_code" => "de",
-    "house_number" => "42",
-    "postcode"     => "80539",
-    "road"         => "Kaulbachstraße",
-    "state"        => "Bayern",
-);
+{
+    # is the correct state_code set in German?
+    # 48.15101/11.58440
+    my %input = (
+        "city"         => "München",
+        "country"      => "Deutschland",
+        "country_code" => "de",
+        "house_number" => "42",
+        "postcode"     => "80539",
+        "road"         => "Kaulbachstraße",
+        "state"        => "Bayern",
+    );
 
-my $formatted = $GAF->format_address(\%input);
-my $rh_comp = $GAF->final_components();
-    
-is($rh_comp->{state_code}, 'BY', 'correct state_code for Bayern');
+    my $formatted = $GAF->format_address(\%input);
+    my $rh_comp = $GAF->final_components();    
+    is($rh_comp->{state_code}, 'BY', 'correct state_code for Bayern');
+}
+
+{
+    # is the correct state_code set in English?
+    # 48.15101/11.58440
+    my %input = (
+        "city"         => "Munich",
+        "country"      => "Germany",
+        "country_code" => "de",
+        "house_number" => "42",
+        "postcode"     => "80539",
+        "road"         => "Kaulbachstraße",
+        "state"        => "Bavaria",
+    );
+
+    my $formatted = $GAF->format_address(\%input);
+    my $rh_comp = $GAF->final_components();    
+    is($rh_comp->{state_code}, 'BY', 'correct state_code for Bavaria');
+}
 
 done_testing();
 
