@@ -11,6 +11,7 @@ $Data::Dumper::Sortkeys = 1;
 use File::Basename qw(dirname);
 use File::Find::Rule;
 use List::Util qw(first);
+use Ref::Util qw(is_hashref);
 use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
 use Try::Catch;
@@ -516,6 +517,7 @@ sub _add_code {
     return if !$rh_components->{$keyname};      # do we know state/county?
 
     my $code = $keyname . '_code';
+
     if (defined($rh_components->{$code})){      # do we already have code?
         # but could have situation where code and long name are same
         # which we want to correct
@@ -523,36 +525,43 @@ sub _add_code {
             return;
         }
     }
-
     
     # ensure country_code is uppercase as we use it as conf key
     $rh_components->{country_code} = uc($rh_components->{country_code});
     my $cc = $rh_components->{country_code};
 
     if ( my $mapping = $self->{$code . 's'}{$cc}){
-        # say Dumper $mapping;
 
         my $name = $rh_components->{$keyname};
         my $uc_name = uc($name);
         
-        foreach my $abbrv ( keys %$mapping ){
+        LOCCODE: foreach my $abbrv ( keys %$mapping ){
 
-            my $confname = $mapping->{$abbrv};
-            
-            if ( $uc_name eq uc($confname) ){
-                $rh_components->{$code} = $abbrv;
-                last;
+            my @confnames; # can have multiple names for the place
+                            # for example in different languages
+
+            if (is_hashref($mapping->{$abbrv})){
+                push(@confnames, values %{$mapping->{$abbrv}});
+            } else {
+                push(@confnames, $mapping->{$abbrv});
             }
-            # perhaps instead of passing in a name, we passed in a code
-            # example: state => 'NC'
-            # we want to turn that into
-            #     state => 'North Carolina'
-            #     state_code => 'NC'
-            #
-            if ( $uc_name eq $abbrv ){
-                $rh_components->{$keyname} = $confname;
-                $rh_components->{$code} = $abbrv;
-                last;
+
+            foreach my $confname (@confnames){
+                if ( $uc_name eq uc($confname) ){
+                    $rh_components->{$code} = $abbrv;
+                    last LOCCODE;
+                }
+                # perhaps instead of passing in a name, we passed in a code
+                # example: state => 'NC'
+                # we want to turn that into
+                #     state => 'North Carolina'
+                #     state_code => 'NC'
+                #
+                if ( $uc_name eq $abbrv ){
+                    $rh_components->{$keyname} = $confname;
+                    $rh_components->{$code} = $abbrv;
+                    last LOCCODE;
+                }
             }
         }
         # didn't find a valid code or name
