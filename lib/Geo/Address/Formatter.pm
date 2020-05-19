@@ -531,13 +531,15 @@ sub _add_code {
 
     if ( my $mapping = $self->{$code . 's'}{$cc}){
         # say Dumper $mapping;
+
+        my $name = $rh_components->{$keyname};
+        my $uc_name = uc($name);
         
         foreach my $abbrv ( keys %$mapping ){
 
-            my $name = $rh_components->{$keyname};
             my $confname = $mapping->{$abbrv};
             
-            if ( uc($name) eq uc($confname) ){
+            if ( $uc_name eq uc($confname) ){
                 $rh_components->{$code} = $abbrv;
                 last;
             }
@@ -547,7 +549,7 @@ sub _add_code {
             #     state => 'North Carolina'
             #     state_code => 'NC'
             #
-            if ( uc($name) eq $abbrv ){
+            if ( $uc_name eq $abbrv ){
                 $rh_components->{$keyname} = $confname;
                 $rh_components->{$code} = $abbrv;
                 last;
