@@ -1,36 +1,30 @@
----
-language: 'perl'
+language: perl
 perl:
-  - '5.30'
-  - '5.28'
-  - '5.26'
-  - '5.24'
-  - '5.22'
+- '5.30'
+- '5.28'
+- '5.26'
+- '5.24'
+- '5.22'
 env: PERL_CPANM_OPT="--notest --force --skip-satisfied"
 before_install:
-  # submodule should be requested automatically, see
-  # https://docs.travis-ci.com/user/common-build-problems/#Git-Submodules-are-not-updated-correctly
-  #
-  # get the perl modules we need
-  #
-  # install dist development dependencies  
-  - "cpanm Dist::Zilla"
-  - "dzil authordeps | xargs cpanm"
-  - "export tmpbuild=`mktemp --directory`"
-  - "dzil build --in $tmpbuild"
-  # for reporting to coveralls.io
-  - "cpanm --quiet --notest Devel::Cover::Report::Coveralls"  
-install: "dzil listdeps | xargs cpanm"
+- cpanm Dist::Zilla
+- dzil authordeps | xargs cpanm
+- export tmpbuild=`mktemp --directory`
+- dzil build --in $tmpbuild
+- cpanm --quiet --notest Devel::Cover::Report::Coveralls
+install: dzil listdeps | xargs cpanm
 script:
-  - "dzil test --author"
-  - PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrsv t  
-  - cover
+- dzil test --author
+- PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove
+  -lrsv t
+- cover
 after_success:
-  - cover -report coveralls  
+- cover -report coveralls
 notifications:
   email:
     on_failure: always
     on_success: change
     recipients:
-      - edf@opencagedata.com
-
+    - edf@opencagedata.com
+  slack:
+    secure: I7WqNy9FdNI0OTqtMWkh/Fys1Q0tzBwWxpeY1WelxbXPncxuwYyEINUPFCN4fO6J2b4zd4qZZ6bqunEl+wc+o43ZWWsVMNUJWxtAz3I8b0hCwAaNdjnAdt9mSKoIvZcp269GhOcmDKNJ+u/Y8pAPdRzEh1u+joKuRqMSs0sF/PE=
