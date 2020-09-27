@@ -311,7 +311,9 @@ sub _postformat {
     foreach my $piece (@before_pieces){
         $piece =~s/^\s+//g;
         $seen{$piece}++;
-        next if ($seen{$piece} > 1);
+        if (lc($piece) ne 'new york'){
+            next if ($seen{$piece} > 1);
+        }
         push(@after_pieces,$piece);
     }
     $text = join(', ', @after_pieces);
