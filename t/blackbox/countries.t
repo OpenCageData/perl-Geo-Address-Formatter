@@ -108,7 +108,7 @@ if ( -d $path ){
         );
     }
 
-    foreach my $filename (@files){
+    foreach my $filename (sort @files){
 
         my $country = basename($filename);
         $country =~ s/\.\w+$//; # us.yaml => us
