@@ -116,7 +116,9 @@ sub _read_configuration {
 
     # see if we can load the components
     try {
+        say STDERR "loading components" if ($debug);
         my @c = LoadFile($path . '/components.yaml');
+        #say STDERR Dumper \@c;
 
         foreach my $rh_c (@c) {
             if (defined($rh_c->{aliases})) {
@@ -274,6 +276,11 @@ sub format_address {
 
     # add the attention, but only if needed
     my $ra_unknown = $self->_find_unknown_components($rh_components);
+    if ($debug){
+        say STDERR "unknown_components:";
+        say STDERR Dumper $ra_unknown;
+    }
+
     if (scalar(@$ra_unknown)) {
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
     }
