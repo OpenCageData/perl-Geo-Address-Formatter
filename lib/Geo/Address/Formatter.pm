@@ -85,13 +85,18 @@ sub new {
     $self->{final_components} = undef;
     bless($self, $class);
 
-    $self->_read_configuration($conf_path);
-    return $self;
+    if ($self->_read_configuration($conf_path)){
+        return $self;
+    }
+    die 'unable to read configuration';
+    return;
 }
 
 sub _read_configuration {
     my $self = shift;
     my $path = shift;
+
+    return if (! -e $path);
 
     my @a_filenames = File::Find::Rule->file()->name('*.yaml')->in($path . '/countries');
 
@@ -99,6 +104,7 @@ sub _read_configuration {
     $self->{component_aliases} = {};
 
     # read the config file(s)
+    my $loaded = 0;
     foreach my $filename (sort @a_filenames) {
         try {
             my $rh_templates = LoadFile($filename);
@@ -109,10 +115,12 @@ sub _read_configuration {
             foreach (keys %$rh_templates) {
                 $self->{templates}{$_} = $rh_templates->{$_};
             }
+            $loaded = 1;
         } catch {
             warn "error parsing country configuration in $filename: $_";
         };
     }
+    return if ($loaded == 0);
 
     # see if we can load the components
     try {
@@ -171,7 +179,7 @@ sub _read_configuration {
     }
     #say Dumper $self->{abbreviations};
     #say Dumper $self->{country2lang};
-    return;
+    return 1;
 }
 
 =head2 final_components
