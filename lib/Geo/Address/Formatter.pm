@@ -89,7 +89,6 @@ sub new {
         return $self;
     }
     die 'unable to read configuration';
-    return;
 }
 
 sub _read_configuration {
