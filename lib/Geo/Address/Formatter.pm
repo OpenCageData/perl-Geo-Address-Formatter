@@ -10,7 +10,6 @@ use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 use File::Basename qw(dirname);
 use File::Find::Rule;
-use List::Util qw(first);
 use Ref::Util qw(is_hashref);
 use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
@@ -19,7 +18,6 @@ use YAML::XS qw(LoadFile);
 use utf8;
 
 my $THC = Text::Hogan::Compiler->new;
-my %THT_CACHE; # a place to store Text::Hogan::Template objects
 
 my $debug = 0;
 
@@ -297,10 +295,8 @@ sub format_address {
     }
 
     # get a compiled template
-    if (!defined($THT_CACHE{$template_text})) {
-        $THT_CACHE{$template_text} = $THC->compile($template_text, {'numeric_string_as_string' => 1});
-    }
-    my $compiled_template = $THT_CACHE{$template_text};
+    my $compiled_template =
+        $THC->compile($template_text, {'numeric_string_as_string' => 1});
 
     if ($debug){
         say STDERR "before _render_template";
@@ -758,10 +754,48 @@ sub _render_template {
     # Mustache calls it context
     my $context = clone($components);
     $context->{first} = sub {
-        my $text     = shift;
-        my $newtext  = $THC->compile($text, {'numeric_string_as_string' => 1})->render($components);
-        my $selected = first { length($_) } split(/\s*\|\|\s*/, $newtext);
-        return $selected;
+        my $text = shift;
+        $text =~ s/^\s*//;
+        $text =~ s/\s*$//;
+
+        my @blocks = split(/\s*\|\|\s*/, $text);
+
+        foreach my $block (@blocks){
+            # may have one or more terms we need to substitute
+            # example: '{{{house_number}}} {{{road}}}'
+            my $outblock = $block;
+
+            my @words = split(/(,?\s+)/, $block);
+            # note split puts the thing that was matched into @words
+            # see: https://perldoc.perl.org/functions/split
+            my $sep = ' ';
+
+            my @outblock_pieces;
+            foreach my $word (@words){
+                if ($word !~ m/\w/){  # was it the thing we matched in split?
+                    $sep = $word;
+                    next;
+                }
+                # is this a token?
+                my $oword;
+                if ($word =~ m/\{\{+/){  # yes, it is
+                    $word =~ s/\{\{+//;
+                    $word =~ s/\}\}+//;
+                    if (defined($components->{$word})){
+                        $oword = $components->{$word};
+                    }
+                } else {                  # no, not a token
+                    $oword = $word;
+                }
+                if ($oword){
+                    push(@outblock_pieces, $sep);
+                    push(@outblock_pieces, $oword);
+                }
+            }
+            if (scalar(@outblock_pieces)){
+                return join('', @outblock_pieces);
+            }
+        }
     };
 
     my $output = $thtemplate->render($context);

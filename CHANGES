@@ -1,5 +1,12 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.90   2021-06-03
+       - major rewrite of _render_template logic for dealing with
+         "first" - remove recursive use of Text::Hogan
+       - remove internal template cache as Text::Hogan already has one
+       - remove List::Util as a dependency
+       - remove Text::Trim as a testing dependency       
+
 1.89   2021-05-29
        - die if conf path doesnt exit or no conf files found
 
