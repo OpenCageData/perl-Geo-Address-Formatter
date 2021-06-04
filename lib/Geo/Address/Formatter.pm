@@ -294,6 +294,8 @@ sub format_address {
         $rh_components = $self->_abbreviate($rh_components);
     }
 
+    $template_text = $self->_replace_template_lambdas($template_text);
+
     # get a compiled template
     my $compiled_template =
         $THC->compile($template_text, {'numeric_string_as_string' => 1});
@@ -753,52 +755,10 @@ sub _render_template {
 
     # Mustache calls it context
     my $context = clone($components);
-    $context->{first} = sub {
-        my $text = shift;
-        $text =~ s/^\s*//;
-        $text =~ s/\s*$//;
-
-        my @blocks = split(/\s*\|\|\s*/, $text);
-
-        foreach my $block (@blocks){
-            # may have one or more terms we need to substitute
-            # example: '{{{house_number}}} {{{road}}}'
-            my $outblock = $block;
-
-            my @words = split(/(,?\s+)/, $block);
-            # note split puts the thing that was matched into @words
-            # see: https://perldoc.perl.org/functions/split
-            my $sep = ' ';
-
-            my @outblock_pieces;
-            foreach my $word (@words){
-                if ($word !~ m/\w/){  # was it the thing we matched in split?
-                    $sep = $word;
-                    next;
-                }
-                # is this a token?
-                my $oword;
-                if ($word =~ m/\{\{+/){  # yes, it is
-                    $word =~ s/\{\{+//;
-                    $word =~ s/\}\}+//;
-                    if (defined($components->{$word})){
-                        $oword = $components->{$word};
-                    }
-                } else {                  # no, not a token
-                    $oword = $word;
-                }
-                if ($oword){
-                    push(@outblock_pieces, $sep);
-                    push(@outblock_pieces, $oword);
-                }
-            }
-            if (scalar(@outblock_pieces)){
-                return join('', @outblock_pieces);
-            }
-        }
-    };
-
     my $output = $thtemplate->render($context);
+
+    $output = $self->_evaluate_template_lamdas($output);
+
     say STDERR "in _render pre _clean: $output" if ($debug);
     $output = $self->_clean($output);
 
@@ -813,6 +773,36 @@ sub _render_template {
     }
     return $output;
 }
+
+# Text::Hogan apparently caches lambdas when rendering templates. In the past
+# we needed our lambda 'first', example
+#   {{#first}} {{{city}}} || {{{town}}} {{/first}}
+# to evaluate the componentes. Whenever the lambda was called with different
+# component values it consumed memory. Now replace with a simpler implementation
+#
+sub _replace_template_lambdas {
+    my $self          = shift;
+    my $template_text = shift;
+    my $rand_id = sprintf('%010d', rand()* 10_000_000);
+    $template_text =~ s!\Q{{#first}}\E(.+?)\Q{{/first}}\E!FIRSTSTART_${rand_id}${1}FIRSTEND_${rand_id}!g;
+    return $template_text;
+}
+
+# We only use a lambda named 'first'
+sub _evaluate_template_lamdas {
+    my $self = shift;
+    my $text = shift;
+    $text =~ s!FIRSTSTART_\d+\s*(.+?)\s*FIRSTEND_\d+!_select_first($1)!segx;
+    return $text;
+}
+
+# '|| val1 ||  || val3' => 'val1'
+sub _select_first {
+    my $text = shift;
+    my @a_parts = grep { length($_) } split(/\s*\|\|\s*/, $text);
+    return scalar(@a_parts) ? $a_parts[0] : '';
+}
+
 
 # note: unsorted list because $cs is a hash!
 # returns []
