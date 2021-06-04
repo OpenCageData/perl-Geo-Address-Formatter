@@ -112,7 +112,8 @@ my $GAF  = $CLASS->new(conf_path => $path);
 
 
 {
-    my $THT = Text::Hogan::Compiler->new->compile('abc {{#first}} {{one}} || {{two}} {{/first}} def');
+    my $template_text = $GAF->_replace_template_lambdas('abc {{#first}} {{one}} || {{two}} {{/first}} def');
+    my $THT = Text::Hogan::Compiler->new->compile($template_text);
     is($GAF->_render_template($THT, {two => 2}), "abc 2 def\n", '_render_template - first');
 }
 
