@@ -783,8 +783,7 @@ sub _render_template {
 sub _replace_template_lambdas {
     my $self          = shift;
     my $template_text = shift;
-    my $rand_id = sprintf('%010d', rand()* 10_000_000);
-    $template_text =~ s!\Q{{#first}}\E(.+?)\Q{{/first}}\E!FIRSTSTART_${rand_id}${1}FIRSTEND_${rand_id}!g;
+    $template_text =~ s!\Q{{#first}}\E(.+?)\Q{{/first}}\E!FIRSTSTART${1}FIRSTEND!g;
     return $template_text;
 }
 
@@ -792,7 +791,7 @@ sub _replace_template_lambdas {
 sub _evaluate_template_lamdas {
     my $self = shift;
     my $text = shift;
-    $text =~ s!FIRSTSTART_\d+\s*(.+?)\s*FIRSTEND_\d+!_select_first($1)!segx;
+    $text =~ s!FIRSTSTART\s*(.+?)\s*FIRSTEND!_select_first($1)!seg;
     return $text;
 }
 

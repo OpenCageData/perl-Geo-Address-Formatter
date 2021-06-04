@@ -42,7 +42,7 @@ foreach my $i (0..100_000) {
         $h_address{$k} = "$k-$i";
     }
 
-    say $GAF->format_address(\%h_address);
+    $GAF->format_address(\%h_address);
 }
 
 done_testing();
