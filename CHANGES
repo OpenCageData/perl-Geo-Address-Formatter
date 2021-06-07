@@ -5,7 +5,7 @@ Revision history for Perl module Geo::Address::Formatter.
          is called
 
 1.92   2021-06-04
-       - PR #9, fix speed regresion introduced in 1.91
+       - PR #9, fix speed regression introduced in 1.91
 
 1.91   2021-06-04
        - yet another rewrite of _render_template logic to replace
