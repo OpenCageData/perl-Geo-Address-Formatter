@@ -220,6 +220,8 @@ sub format_address {
     my $rh_components = clone(shift) || return;
     my $rh_options    = shift        || {};
 
+    # make sure empty at the beginning
+    $self->{final_components} = undef;    
     # deal with the options
     # country
     my $cc
