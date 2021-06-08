@@ -1,5 +1,10 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.94   2021-06-08
+       - ability to pass an "address_template" option to format_address
+         to overwrite the template specified in conf
+       - test
+
 1.93   2021-06-07
        - make sure final_components are reset every time format_address
          is called
