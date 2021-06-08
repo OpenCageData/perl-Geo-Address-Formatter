@@ -212,6 +212,9 @@ Possible options you are:
     'abbreviate', if supplied common abbreviations are applied
     to the resulting output.
 
+    'address_template', a mustache format template to be used instead of the template
+    defined in the configuration
+
 =cut
 
 sub format_address {
@@ -252,10 +255,13 @@ sub format_address {
     $self->_sanity_cleaning($rh_components);
 
     # 4. determine the template
+    my $template_text;
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     
-    my $template_text;
-    if (defined($rh_config->{address_template})) {
+    if (defined($rh_options->{address_template})) {
+        $template_text = $rh_options->{address_template};
+    }
+    elsif (defined($rh_config->{address_template})) {
         $template_text = $rh_config->{address_template};
     } elsif (defined($self->{templates}{default}{address_template})) {
         $template_text = $self->{templates}{default}{address_template};
