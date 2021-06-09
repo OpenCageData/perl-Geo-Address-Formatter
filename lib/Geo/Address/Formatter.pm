@@ -247,6 +247,10 @@ sub format_address {
     # 2b. should we abbreviate?
     my $abbrv = $rh_options->{abbreviate} // 0;
 
+    if ($debug){
+        say STDERR "component_aliases";
+        say STDERR Dumper $self->{component_aliases};
+    }
     # set the aliases, unless this would overwrite something
     foreach my $alias (sort keys %{$self->{component_aliases}}){
         if (defined($rh_components->{$alias})
