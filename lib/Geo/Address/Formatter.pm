@@ -226,6 +226,11 @@ sub format_address {
     # 1. make sure empty at the beginning
     $self->{final_components} = undef;    
 
+    if ($debug){
+        say STDERR "start of format_address";
+        say STDERR Dumper $rh_components;
+    }
+
     # 2. deal with the options
 
     # 2a. which country format will we use?
@@ -243,8 +248,7 @@ sub format_address {
     my $abbrv = $rh_options->{abbreviate} // 0;
 
     # set the aliases, unless this would overwrite something
-    foreach my $alias (sort keys %{$self->{component_aliases}}) {
-
+    foreach my $alias (sort keys %{$self->{component_aliases}}){
         if (defined($rh_components->{$alias})
             && !defined($rh_components->{$self->{component_aliases}->{$alias}}))
         {
@@ -252,8 +256,17 @@ sub format_address {
         }
     }
 
+    if ($debug){
+        say STDERR "after component_aliases applied";
+        say STDERR Dumper $rh_components;
+    }
+
     # 3. deal wtih terrible inputs
     $self->_sanity_cleaning($rh_components);
+    if ($debug){
+        say STDERR "after sanity_cleaning applied";
+        say STDERR Dumper $rh_components;
+    }
 
     # 4. determine the template
     my $template_text;
@@ -284,12 +297,20 @@ sub format_address {
 
     # 5. clean up the components, possibly add codes
     $self->_fix_country($rh_components);
+    if ($debug){
+        say STDERR "after fix_country";
+        say STDERR Dumper $rh_components;
+    }
+
     $self->_apply_replacements($rh_components, $rh_config->{replace});
+    if ($debug){
+        say STDERR "after applying_replacements applied";
+        say STDERR Dumper $rh_components;
+    }
     $self->_add_state_code($rh_components);
     $self->_add_county_code($rh_components);
-
     if ($debug){
-        say STDERR "after replacements and adding codes";
+        say STDERR "after adding codes";
         say STDERR Dumper $rh_components;
     }
 
@@ -366,10 +387,6 @@ sub _postformat {
     foreach my $ra_fromto (@$raa_rules) {
         try {
             my $regexp = qr/$ra_fromto->[0]/;
-            if ($debug){
-                say STDERR 'text: ' . $text;
-                say STDERR 're: ' . $regexp;
-            }
             my $replacement = $ra_fromto->[1];
 
             # ultra hack to do substitution
@@ -633,11 +650,10 @@ sub _apply_replacements {
     my $rh_components = shift;
     my $raa_rules     = shift;
 
-    #warn "in _apply_replacements";
-    #warn "  raa_rules";
-    #warn Dumper $raa_rules;
-    #warn "  rh_components";
-    #warn Dumper $rh_components;
+    if ($debug){
+        say STDERR "in _apply_replacements";
+        say STDERR Dumper $raa_rules;
+    }
 
     foreach my $component (sort keys %$rh_components) {
         foreach my $ra_fromto (@$raa_rules) {
@@ -650,7 +666,6 @@ sub _apply_replacements {
                         $rh_components->{$component} = $ra_fromto->[1];
                     }
                 } else {
-
                     my $regexp = qr/$ra_fromto->[0]/;
                     $rh_components->{$component} =~ s/$regexp/$ra_fromto->[1]/;
                 }
