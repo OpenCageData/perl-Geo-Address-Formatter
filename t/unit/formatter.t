@@ -283,6 +283,42 @@ my $GAF  = $CLASS->new(conf_path => $path);
     );
 }
 
+
+# actually do some formatting
+{
+    my $af_path   = dirname(__FILE__) . '/../../address-formatting';
+    my $conf_path = $af_path . '/conf/';
+    my $GAF       = $CLASS->new(conf_path => $conf_path, debug => 0);
+
+    my $rh_components = {
+          'city' => 'London',
+          'city_district' => 'London Borough of Southwark',
+          'continent' => 'Europe',
+          'country' => 'United Kingdom',
+          'country_code' => 'gb',
+          'postcode' => 'SE1 9TG',
+          'quarter' => 'Bankside',
+          'state' => 'England',
+          'state_district' => 'Greater London',
+          'suburb' => 'Southwark'        
+    };
+
+    my $override_template =
+        '{{{neighbourhood}}}, {{{city}}}, {{{county}}}, {{{state}}}, {{{country}}}';
+    my $rh_options = {
+        'address_template' => $override_template,
+    };
+    my $formatted = $GAF->format_address($rh_components, $rh_options);
+    $formatted =~ s/\n$//g;  # remove from end
+    $formatted =~ s/\n/, /g; # turn into commas
+
+    is( $formatted,
+        'Southwark, London, England, United Kingdom',
+        'correctly used override_template'
+    );
+}
+
+
 done_testing();
 
 1;
