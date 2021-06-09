@@ -82,6 +82,7 @@ sub new {
     $self->{final_components} = undef;
     bless($self, $class);
 
+    $debug = 1 if (defined($params{debug}) && $params{debug});
     if ($self->_read_configuration($conf_path)){
         return $self;
     }
