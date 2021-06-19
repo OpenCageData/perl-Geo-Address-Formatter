@@ -728,7 +728,11 @@ sub _abbreviate {
 sub _clean {
     my $self = shift;
     my $out  = shift // return;
-    #warn "entering _clean \n$out";
+    if ($debug){
+        say STDERR "entering _clean \n$out";
+    }
+
+    $out =~ s/\&#39\;/'/g;
 
     $out =~ s/[\},\s]+$//;
     $out =~ s/^[,\s]+//;
@@ -786,6 +790,7 @@ sub _render_template {
 
     # Mustache calls it context
     my $context = clone($components);
+    say STDERR 'context: ' . Dumper $context if ($debug);
     my $output = $thtemplate->render($context);
 
     $output = $self->_evaluate_template_lamdas($output);
@@ -794,6 +799,7 @@ sub _render_template {
     $output = $self->_clean($output);
 
     # is it empty?
+    # if yes and there is only one component then just use that one
     if ($output !~ m/\w/) {
         my @comps = sort keys %$components;
         if (scalar(@comps) == 1) {

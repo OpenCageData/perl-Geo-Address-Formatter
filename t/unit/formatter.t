@@ -33,7 +33,13 @@ my $GAF  = $CLASS->new(conf_path => $path);
 {
     is($GAF->_clean(undef), undef, 'clean - undef');
     is($GAF->_clean(0),     "0\n", 'clean - zero');
-    my $rh_tests = {'  , abc , def ,, ghi , ' => "abc, def, ghi\n",};
+    my $rh_tests = {
+        '  , abc , def ,, ghi , '  => "abc, def, ghi\n",
+        'St Mary&#39;s Almshouses' => "St Mary's Almshouses\n",
+        'St Mary\'s Almshouses'    => "St Mary's Almshouses\n",
+        "St Mary's Almshouses"     => "St Mary's Almshouses\n",        
+  
+    };
 
     while (my ($source, $expected) = each(%$rh_tests)) {
         is($GAF->_clean($source), $expected, 'clean - ' . $source);
