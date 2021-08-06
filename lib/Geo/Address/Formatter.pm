@@ -279,22 +279,26 @@ sub format_address {
     if (defined($rh_options->{address_template})) {
         $template_text = $rh_options->{address_template};
     }
-    elsif (defined($rh_config->{address_template})) {
-        $template_text = $rh_config->{address_template};
-    } elsif (defined($self->{templates}{default}{address_template})) {
-        $template_text = $self->{templates}{default}{address_template};
-    }
-    
-    # do we have the minimal components for an address?
-    # or should we instead use the fallback template?
-    if (!$self->_minimal_components($rh_components)) {
-        say STDERR "using fallback" if ($debug);
-        if (defined($rh_config->{fallback_template})) {
-            $template_text = $rh_config->{fallback_template};
-        } elsif (defined($self->{templates}{default}{fallback_template})) {
-            $template_text = $self->{templates}{default}{fallback_template};
+    else {
+
+        if (defined($rh_config->{address_template})) {
+            $template_text = $rh_config->{address_template};
+        } elsif (defined($self->{templates}{default}{address_template})) {
+            $template_text = $self->{templates}{default}{address_template};
         }
-        # no fallback
+    
+        # do we have the minimal components for an address?
+        # or should we instead use the fallback template?
+        if (!$self->_minimal_components($rh_components)) {
+            say STDERR "using fallback" if ($debug);
+            if (defined($rh_config->{fallback_template})) {
+                $template_text = $rh_config->{fallback_template};
+            } elsif (defined($self->{templates}{default}{fallback_template})) {
+                $template_text = $self->{templates}{default}{fallback_template};
+            }
+            # no fallback
+        }
+
     }
 
     say STDERR 'template text: ' . $template_text if ($debug);
