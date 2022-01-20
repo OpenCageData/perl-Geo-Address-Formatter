@@ -123,7 +123,7 @@ sub _read_configuration {
     try {
         say STDERR "loading components" if ($debug);
         my @c = LoadFile($path . '/components.yaml');
-        #say STDERR Dumper \@c;
+        # say STDERR Dumper \@c;
 
         foreach my $rh_c (@c) {
             if (defined($rh_c->{aliases})) {
@@ -133,14 +133,14 @@ sub _read_configuration {
             }
         }
         foreach my $rh_c (@c) {
-            push(@{$self->{ordered_components}}, $rh_c->{name});
+            $self->{all_components}{$rh_c->{name}} = 1;
             if (defined($rh_c->{aliases})) {
                 foreach my $alias (@{$rh_c->{aliases}}) {
-                    push(@{$self->{ordered_components}}, $alias);
+                    $self->{all_components}{$alias} = 1;;
                 }
             }
         }
-        #say Dumper $self->{ordered_components};
+        # say Dumper $self->{all_components};
     } catch {
         warn "error parsing component configuration: $_";
     };
@@ -843,17 +843,14 @@ sub _select_first {
     return scalar(@a_parts) ? $a_parts[0] : '';
 }
 
-
-# note: unsorted list because $cs is a hash!
 # returns []
 sub _find_unknown_components {
     my $self       = shift;
-    my $components = shift;
+    my $rh_components = shift;
 
-    my %h_known   = map  { $_ => 1 } @{$self->{ordered_components}};
-    my @a_unknown = grep { !exists($h_known{$_}) } sort keys %$components;
+    my @a_unknown = grep { !exists($self->{all_components}{$_}) } 
+                    sort keys %$rh_components;
 
-    #warn Dumper \@a_unknown;
     return \@a_unknown;
 }
 
