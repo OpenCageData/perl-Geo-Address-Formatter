@@ -242,6 +242,7 @@ sub format_address {
 
     if ($cc) {
         $rh_components->{country_code} = $cc;
+        $self->_set_district_alias($cc);
     }
 
     # 2b. should we abbreviate?
@@ -251,6 +252,7 @@ sub format_address {
         say STDERR "component_aliases";
         say STDERR Dumper $self->{component_aliases};
     }
+    
     # set the aliases, unless this would overwrite something
     foreach my $alias (sort keys %{$self->{component_aliases}}){
         if (defined($rh_components->{$alias})
@@ -842,6 +844,32 @@ sub _select_first {
     my @a_parts = grep { length($_) } split(/\s*\|\|\s*/, $text);
     return scalar(@a_parts) ? $a_parts[0] : '';
 }
+
+my %small_district = (
+    'br' => 1,
+    'cr' => 1,
+    'es' => 1,
+    'ni' => 1,
+    'py' => 1,
+    'ro' => 1,
+    'tg' => 1,
+    'tm' => 1,
+    'xk' => 1,
+);
+
+# correct the alias for "district"
+# in OSM some countries use district to mean "city_district"
+# others to mean "state_district"
+sub _set_district_alias {
+    my $self = shift;
+    my $cc = shift;
+    $self->{component_aliases}{district} = 'neighbourhood';
+    if (! defined($small_district{$cc})){
+        $self->{component_aliases}{district} = 'state_district';        
+    }
+    return;
+}  
+
 
 # returns []
 sub _find_unknown_components {
