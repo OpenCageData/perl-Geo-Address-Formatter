@@ -1,6 +1,6 @@
-# ABSTRACT: take structured address data and format it according to the various global/country rules
-
 package Geo::Address::Formatter;
+
+# ABSTRACT: take structured address data and format it according to the various global/country rules
 
 use strict;
 use warnings;
@@ -133,14 +133,14 @@ sub _read_configuration {
             }
         }
         foreach my $rh_c (@c) {
-            $self->{all_components}{$rh_c->{name}} = 1;
+            push(@{$self->{ordered_components}}, $rh_c->{name});
             if (defined($rh_c->{aliases})) {
                 foreach my $alias (@{$rh_c->{aliases}}) {
-                    $self->{all_components}{$alias} = 1;;
+                    push(@{$self->{ordered_components}}, $alias);
                 }
             }
         }
-        # say Dumper $self->{all_components};
+        #say Dumper $self->{ordered_components};
     } catch {
         warn "error parsing component configuration: $_";
     };
@@ -876,8 +876,8 @@ sub _find_unknown_components {
     my $self       = shift;
     my $rh_components = shift;
 
-    my @a_unknown = grep { !exists($self->{all_components}{$_}) } 
-                    sort keys %$rh_components;
+    my %h_known   = map  { $_ => 1 } @{$self->{ordered_components}};
+    my @a_unknown = grep { !exists($h_known{$_}) } sort keys %$rh_components;
 
     return \@a_unknown;
 }
