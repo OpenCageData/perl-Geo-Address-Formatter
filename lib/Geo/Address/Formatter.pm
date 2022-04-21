@@ -83,6 +83,8 @@ sub new {
     bless($self, $class);
 
     $debug = 1 if (defined($params{debug}) && $params{debug});
+    say STDERR "************* in Geo::Address::Formatter::new ***" if ($debug);
+
     if ($self->_read_configuration($conf_path)){
         return $self;
     }
@@ -97,8 +99,10 @@ sub _read_configuration {
 
     my @a_filenames = File::Find::Rule->file()->name('*.yaml')->in($path . '/countries');
 
-    $self->{templates}         = {};
-    $self->{component_aliases} = {};
+    $self->{templates}          = {};
+    $self->{component_aliases}  = {};
+    $self->{component2type}     = {};
+    $self->{ordered_components} = [];
 
     # read the config file(s)
     my $loaded = 0;
@@ -123,24 +127,36 @@ sub _read_configuration {
     try {
         say STDERR "loading components" if ($debug);
         my @c = LoadFile($path . '/components.yaml');
-        # say STDERR Dumper \@c;
+
+        if ($debug){
+            say STDERR Dumper \@c;
+        }
 
         foreach my $rh_c (@c) {
-            if (defined($rh_c->{aliases})) {
-                foreach my $alias (@{$rh_c->{aliases}}) {
-                    $self->{component_aliases}{$alias} = $rh_c->{name};
-                }
+            if (defined($rh_c->{aliases}) && defined($rh_c->{name})){
+                $self->{component_aliases}{$rh_c->{name}} = $rh_c->{aliases};
             }
         }
+
         foreach my $rh_c (@c) {
             push(@{$self->{ordered_components}}, $rh_c->{name});
+            $self->{component2type}->{$rh_c->{name}} = $rh_c->{name};
+
             if (defined($rh_c->{aliases})) {
                 foreach my $alias (@{$rh_c->{aliases}}) {
                     push(@{$self->{ordered_components}}, $alias);
+                    $self->{component2type}->{$alias} = $rh_c->{name};
                 }
             }
         }
-        #say Dumper $self->{ordered_components};
+        if ($debug){
+            say STDERR 'component_aliases';
+            say STDERR Dumper $self->{component_aliases};
+            say STDERR 'ordered_components';
+            say STDERR Dumper $self->{ordered_components};
+            say STDERR 'component2type';
+            say STDERR Dumper $self->{component2type};
+        }
     } catch {
         warn "error parsing component configuration: $_";
     };
@@ -227,7 +243,8 @@ sub format_address {
     $self->{final_components} = undef;    
 
     if ($debug){
-        say STDERR "start of format_address";
+        say STDERR "*** in format_address ***";
+        say STDERR Dumper $rh_options;
         say STDERR Dumper $rh_components;
     }
 
@@ -254,11 +271,24 @@ sub format_address {
     }
     
     # set the aliases, unless this would overwrite something
-    foreach my $alias (sort keys %{$self->{component_aliases}}){
-        if (defined($rh_components->{$alias})
-            && !defined($rh_components->{$self->{component_aliases}->{$alias}}))
-        {
-            $rh_components->{$self->{component_aliases}->{$alias}} = $rh_components->{$alias};
+    # need to do this in the right order (as defined in the components file)
+    # For example:
+    # both 'city_district' and 'suburb' are aliases of 'neighbourhood'
+    # so which one should we use if both are present?
+    # We should use the one defined first in the list
+    foreach my $placetype (keys %{$self->{component_aliases}}){
+        # do we already have this placetype?
+        # $placetype is 'neighbourhood'
+
+        next if (defined($rh_components->{$placetype}));
+
+        # if not let's go through the list in order and see if we have an alias
+        foreach my $alias (@{$self->{component_aliases}->{$placetype}}){
+            # $alias is 'suburb'
+            if (defined($rh_components->{$alias})){
+                $rh_components->{$placetype} = $rh_components->{$alias};
+                last;
+            }
         }
     }
 
@@ -863,9 +893,28 @@ my %small_district = (
 sub _set_district_alias {
     my $self = shift;
     my $cc = shift;
-    $self->{component_aliases}{district} = 'neighbourhood';
-    if (! defined($small_district{$cc})){
-        $self->{component_aliases}{district} = 'state_district';        
+
+    if (defined($small_district{$cc})){
+        $self->{component2type}{district} = 'neighbourhood';
+
+        # remove from the state_district alias list
+        my @temp = grep($_ ne 'district', @{$self->{component_aliases}{'state_district'}});
+        $self->{component_aliases}{'state_district'} = \@temp;
+
+        # add to the neighbourhood alias list
+        # though of course we are just sticking it at the end
+        push(@{$self->{component_aliases}{'neighbourhood'}}, 'district');
+
+    } else {
+        # set 'district' to be type 'state_district'
+        $self->{component2type}{district} = 'state_district';
+
+        # remove from the neighbourhood alias list
+        my @temp = grep($_ ne 'district', @{$self->{component_aliases}{'neighbourhood'}});
+        $self->{component_aliases}{'neighbourhood'} = \@temp;
+
+        # add to the state_district alias list
+        push(@{$self->{component_aliases}{'state_district'}}, 'district');
     }
     return;
 }  
