@@ -894,12 +894,10 @@ sub _set_district_alias {
     my $self = shift;
     my $cc = shift;
 
+    my $oldalias;
     if (defined($small_district{$cc})){
         $self->{component2type}{district} = 'neighbourhood';
-
-        # remove from the state_district alias list
-        my @temp = grep($_ ne 'district', @{$self->{component_aliases}{'state_district'}});
-        $self->{component_aliases}{'state_district'} = \@temp;
+        $oldalias = 'state_district';
 
         # add to the neighbourhood alias list
         # though of course we are just sticking it at the end
@@ -908,14 +906,16 @@ sub _set_district_alias {
     } else {
         # set 'district' to be type 'state_district'
         $self->{component2type}{district} = 'state_district';
-
-        # remove from the neighbourhood alias list
-        my @temp = grep($_ ne 'district', @{$self->{component_aliases}{'neighbourhood'}});
-        $self->{component_aliases}{'neighbourhood'} = \@temp;
+        $oldalias = 'neighbourhood';        
 
         # add to the state_district alias list
         push(@{$self->{component_aliases}{'state_district'}}, 'district');
-    }
+    } 
+
+    # remove from the old alias list
+    my @temp = grep { $_ ne 'district' } @{$self->{component_aliases}{$oldalias}};
+    $self->{component_aliases}{$oldalias} = \@temp;
+
     return;
 }  
 
