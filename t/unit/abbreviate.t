@@ -5,8 +5,6 @@ use Test::More;
 use Test::Warn;
 use Clone qw(clone);
 use File::Basename qw(dirname);
-use Data::Dumper;
-use Text::Hogan::Compiler;
 use utf8;
 
 my $CLASS = 'Geo::Address::Formatter';
