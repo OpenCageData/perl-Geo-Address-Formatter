@@ -1,9 +1,9 @@
 use strict;
 use warnings;
 use lib 'lib';
-use Test::More tests => 8+1;
+use Test::More tests => 7+1;
 use Test::Warn;
-use Test::NoWarnings 'had_no_warnings';
+use Test::NoWarnings;
 use File::Basename qw(dirname);
 use utf8;
 
@@ -156,7 +156,7 @@ Spain
     my $out = $GAF_nw->format_address($rh_components, {abbreviate => 1});
 }
 
-had_no_warnings;
+
 
 
 1;
