@@ -83,7 +83,7 @@ I<debug>: prints tons of debugging info for use in development.
 
 I<no_warnings>: turns off a few warnings if configuration is not optimal.
 
-I<only_address>: formatted will only contain known components (will not include POI names like)
+I<only_address>: formatted will only contain known components (will not include POI names like). Note, can be overridden with optional param to format_address method.
 
 =cut
 
@@ -253,7 +253,7 @@ Possible options are:
     e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
     If ommited we try to find the country in the address components.
 
-    'only_address', same as I<only_address> global option but set at formatting level
+    'only_address', same as only_address global option but set at formatting level
 
 =cut
 
