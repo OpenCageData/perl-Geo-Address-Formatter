@@ -94,10 +94,12 @@ sub new {
     my $conf_path = $params{conf_path} || die "no conf_path set";
 
     # optional params
-    $show_warnings  = (defined($params{no_warnings})  && $params{no_warnings}) // 1;
-    $only_address   = (defined($params{only_address}) && $params{only_address}) // 0;
-    $debug          = (defined($params{debug})        && $params{debug}) // 0;
-    
+    if ( defined($params{no_warnings}) && ($params{no_warnings})){
+        $show_warnings  = 0;
+    }
+    $only_address  = (defined($params{only_address}) && $params{only_address}) // 0;
+    $debug         = (defined($params{debug})        && $params{debug})        // 0;
+
     $self->{final_components} = undef;
     bless($self, $class);
 
