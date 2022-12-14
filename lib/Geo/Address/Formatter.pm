@@ -94,9 +94,9 @@ sub new {
     my $conf_path = $params{conf_path} || die "no conf_path set";
 
     # optional params
-    $show_warnings  = 0 if (defined($params{no_warnings})  && $params{no_warnings});
-    $only_address   = 1 if (defined($params{only_address}) && $params{only_address});
-    $debug          = 1 if (defined($params{debug})        && $params{debug});
+    $show_warnings  = (defined($params{no_warnings})  && $params{no_warnings}) // 1;
+    $only_address   = (defined($params{only_address}) && $params{only_address}) // 0;
+    $debug          = (defined($params{debug})        && $params{debug}) // 0;
     
     $self->{final_components} = undef;
     bless($self, $class);
@@ -284,6 +284,12 @@ sub format_address {
     # 2b. should we abbreviate?
     my $abbrv = $rh_options->{abbreviate} // 0;
 
+    # 2c. was only_address set at the formatting level
+    my $oa = $only_address;
+    if (defined($rh_options->{only_address})){
+        $oa = $rh_options->{only_address};
+    }
+
     if ($debug){
         say STDERR "component_aliases";
         say STDERR Dumper $self->{component_aliases};
@@ -378,13 +384,14 @@ sub format_address {
     if ($debug){
         say STDERR "unknown_components:";
         say STDERR Dumper $ra_unknown;
-        say STDERR "only_address: $only_address";
+        say STDERR "object level only_address: $only_address";
+        say STDERR "formatting level only_address: $oa";
     }
 
-    if ($only_address){
+    if ($oa){
         if ($debug){
             say STDERR "ignoring unknown_components because only_address was specified";
-        }        
+        }
     }
     elsif (scalar(@$ra_unknown)){
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
