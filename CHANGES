@@ -1,5 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.992  2022-12-14
+       - new optional "only_address" parameter to new method to use only known components in
+         the formatted output
+
 1.991  2022-10-30
        - new optional "no_warnings" parameter to new method to suppress
          some warnings
