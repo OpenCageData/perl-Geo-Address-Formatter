@@ -18,8 +18,11 @@ use YAML::XS qw(LoadFile);
 use utf8;
 
 my $THC = Text::Hogan::Compiler->new;
+
+# optional params
 my $show_warnings = 1;
-my $debug = 0;
+my $debug         = 0;
+my $only_address  = 0;
 
 =head1 DESCRIPTION
 
@@ -80,6 +83,8 @@ I<debug>: prints tons of debugging info for use in development.
 
 I<no_warnings>: turns off a few warnings if configuration is not optimal.
 
+I<only_address>: formatted will only contain known components (will not include POI names like)
+
 =cut
 
 sub new {
@@ -87,14 +92,17 @@ sub new {
 
     my $self      = {};
     my $conf_path = $params{conf_path} || die "no conf_path set";
-    $show_warnings = 0 if (defined($params{no_warnings}) && $params{no_warnings});
 
+    # optional params
+    $show_warnings  = 0 if (defined($params{no_warnings})  && $params{no_warnings});
+    $only_address   = 1 if (defined($params{only_address}) && $params{only_address});
+    $debug          = 1 if (defined($params{debug})        && $params{debug});
+    
     $self->{final_components} = undef;
     bless($self, $class);
 
-    $debug = 1 if (defined($params{debug}) && $params{debug});
     say STDERR "************* in Geo::Address::Formatter::new ***" if ($debug);
-
+    
     if ($self->_read_configuration($conf_path)){
         return $self;
     }
@@ -370,10 +378,19 @@ sub format_address {
     if ($debug){
         say STDERR "unknown_components:";
         say STDERR Dumper $ra_unknown;
+        say STDERR "only_address: $only_address";
     }
 
-    if (scalar(@$ra_unknown)) {
+    if ($only_address){
+        if ($debug){
+            say STDERR "ignoring unknown_components because only_address was specified";
+        }        
+    }
+    elsif (scalar(@$ra_unknown)){
         $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
+        if ($debug){
+            say STDERR "adding unknown_components to 'attention'";
+        }
     }
 
     # 7. abbreviate
