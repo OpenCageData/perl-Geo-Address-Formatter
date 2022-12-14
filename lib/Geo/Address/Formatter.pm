@@ -239,17 +239,19 @@ sub final_components {
 Given a structures address (hashref) and options (hashref) returns a
 formatted address.
 
-Possible options you are:
-
-    'country', which should be an uppercase ISO 3166-1:alpha-2 code
-    e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
-    If ommited we try to find the country in the address components.
+Possible options are:
 
     'abbreviate', if supplied common abbreviations are applied
     to the resulting output.
 
     'address_template', a mustache format template to be used instead of the template
     defined in the configuration
+
+    'country', which should be an uppercase ISO 3166-1:alpha-2 code
+    e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
+    If ommited we try to find the country in the address components.
+
+    'only_address', same as I<only_address> global option but set at formatting level
 
 =cut
 
