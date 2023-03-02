@@ -454,10 +454,11 @@ sub format_address {
 sub _postformat {
     my $self = shift;
     my $text = shift;
-
-    say STDERR "entering _postformat: $text" if ($debug);
     my $raa_rules = shift;
-    my $text_orig = $text; # keep a copy
+
+    if ($debug){
+        say STDERR "entering _postformat: $text"
+    }
 
     # remove duplicates
     my @before_pieces = split(/, /, $text);
