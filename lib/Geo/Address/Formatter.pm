@@ -298,8 +298,10 @@ sub format_address {
         say STDERR "component_aliases";
         say STDERR Dumper $self->{component_aliases};
     }
+
+    # done with the options
     
-    # set the aliases, unless this would overwrite something
+    # 3. set the aliases, unless this would overwrite something
     # need to do this in the right order (as defined in the components file)
     # For example:
     # both 'city_district' and 'suburb' are aliases of 'neighbourhood'
@@ -741,7 +743,7 @@ sub _apply_replacements {
         say STDERR Dumper $raa_rules;
     }
 
-    foreach my $component (sort keys %$rh_components) {
+    foreach my $component (keys %$rh_components) {
         foreach my $ra_fromto (@$raa_rules) {
             try {
                 # do key specific replacement
