@@ -384,23 +384,29 @@ sub format_address {
     }
 
     # 6. add the attention, but only if needed
-    my $ra_unknown = $self->_find_unknown_components($rh_components);
     if ($debug){
-        say STDERR "unknown_components:";
-        say STDERR Dumper $ra_unknown;
         say STDERR "object level only_address: $only_address";
         say STDERR "formatting level only_address: $oa";
     }
 
     if ($oa){
         if ($debug){
-            say STDERR "ignoring unknown_components because only_address was specified";
+            say STDERR "not looking for unknown_components";
+            say STDERR "only_address was specified";
         }
     }
-    elsif (scalar(@$ra_unknown)){
-        $rh_components->{attention} = join(', ', map { $rh_components->{$_} } @$ra_unknown);
+    else {
+        my $ra_unknown = $self->_find_unknown_components($rh_components);
         if ($debug){
-            say STDERR "adding unknown_components to 'attention'";
+            say STDERR "unknown_components:";
+            say STDERR Dumper $ra_unknown;
+        }
+        if (scalar(@$ra_unknown)){
+            $rh_components->{attention} =
+                join(', ', map { $rh_components->{$_} } @$ra_unknown);
+            if ($debug){
+                say STDERR "putting unknown_components in 'attention'";
+            }
         }
     }
 
@@ -494,8 +500,8 @@ sub _sanity_cleaning {
     my $self          = shift;
     my $rh_components = shift || return;
 
+    # catch insane postcodes
     if (defined($rh_components->{'postcode'})) {
-
         if (length($rh_components->{'postcode'}) > 20) {
             delete $rh_components->{'postcode'};
         } elsif ($rh_components->{'postcode'} =~ m/\d+;\d+/) {
@@ -508,16 +514,16 @@ sub _sanity_cleaning {
 
     # remove things that might be empty
     foreach my $c (keys %$rh_components) {
+        # catch empty values
         if (!defined($rh_components->{$c})) {
             delete $rh_components->{$c};
-        } elsif ($rh_components->{$c} !~ m/\w/) {
+        }
+        # no chars
+        elsif ($rh_components->{$c} !~ m/\w/) {
             delete $rh_components->{$c};
         }
-    }
-
-    # catch values containing URLs
-    foreach my $c (keys %$rh_components) {
-        if ($rh_components->{$c} =~ m|https?://|) {
+        # catch values containing URLs
+        elsif ($rh_components->{$c} =~ m|https?://|) {
             delete $rh_components->{$c};
         }
     }
@@ -617,8 +623,8 @@ sub _fix_country {
     # is the country a number?
     # if so, and there is a state, use state as country
     if (defined($rh_components->{country})) {
-        if (defined($rh_components->{state})) {
-            if (looks_like_number($rh_components->{country})) {
+        if (looks_like_number($rh_components->{country})) {
+            if (defined($rh_components->{state})) {
                 $rh_components->{country} = $rh_components->{state};
                 delete $rh_components->{state};
             }
