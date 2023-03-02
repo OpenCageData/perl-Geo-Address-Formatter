@@ -153,8 +153,12 @@ sub _read_configuration {
         }
 
         foreach my $rh_c (@c) {
-            if (defined($rh_c->{aliases}) && defined($rh_c->{name})){
-                $self->{component_aliases}{$rh_c->{name}} = $rh_c->{aliases};
+            if (defined($rh_c->{name})){
+                if (defined($rh_c->{aliases})){
+                    $self->{component_aliases}{$rh_c->{name}} = $rh_c->{aliases};
+                } else {
+                    $self->{component_aliases}{$rh_c->{name}} = [];
+                }
             }
         }
 
@@ -300,25 +304,48 @@ sub format_address {
     }
 
     # done with the options
-    
+
     # 3. set the aliases, unless this would overwrite something
     # need to do this in the right order (as defined in the components file)
     # For example:
     # both 'city_district' and 'suburb' are aliases of 'neighbourhood'
     # so which one should we use if both are present?
     # We should use the one defined first in the list
-    foreach my $placetype (keys %{$self->{component_aliases}}){
-        # do we already have this placetype?
-        # $placetype is 'neighbourhood'
 
-        next if (defined($rh_components->{$placetype}));
+    my $rhh_p2a;
+    foreach my $c (keys %$rh_components){
 
-        # if not let's go through the list in order and see if we have an alias
-        foreach my $alias (@{$self->{component_aliases}->{$placetype}}){
-            # $alias is 'suburb'
-            if (defined($rh_components->{$alias})){
-                $rh_components->{$placetype} = $rh_components->{$alias};
-                last;
+        # might not need an alias as it is a primary type
+        next if (defined($self->{component_aliases}{$c}));
+
+        # it is not a primary type
+        # is there an alias?
+        if (defined($self->{component2type}{$c})){
+            my $ptype = $self->{component2type}{$c};
+            # but is it already set?
+            if (! defined($rh_components->{$ptype}) ){
+                # no, we will set it later
+                $rhh_p2a->{$ptype}{$c} = 1;
+
+            }
+        }
+    }
+
+    # now we know which primary types have aliases
+    foreach my $ptype (keys %$rhh_p2a){
+        # is there more than one?
+        my @aliases = keys %{$rhh_p2a->{$ptype}};
+        if (scalar @aliases == 1){
+            $rh_components->{$ptype} = $rh_components->{$aliases[0]};
+            next;  # we are done with this ptype
+        }
+
+        # if there is more than one we need to go through the list
+        # so we do them in the right order
+        foreach my $c (@{$self->{component_aliases}->{$ptype}}){
+            if (defined($rh_components->{$c})){
+                $rh_components->{$ptype} = $rh_components->{$c};
+                last; # we are done with this ptype
             }
         }
     }
