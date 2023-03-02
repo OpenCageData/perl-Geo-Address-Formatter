@@ -1007,8 +1007,7 @@ sub _find_unknown_components {
     my $rh_components = shift;
 
     my %h_known   = map  { $_ => 1 } @{$self->{ordered_components}};
-    my @a_unknown = grep { !exists($h_known{$_}) } sort keys %$rh_components;
-
+    my @a_unknown = grep { !exists($h_known{$_}) } keys %$rh_components;
     return \@a_unknown;
 }
 
