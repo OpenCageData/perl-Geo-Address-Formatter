@@ -328,14 +328,14 @@ sub format_address {
         say STDERR Dumper $rh_components;
     }
 
-    # 3. deal wtih terrible inputs
+    # 4. deal wtih terrible inputs
     $self->_sanity_cleaning($rh_components);
     if ($debug){
         say STDERR "after sanity_cleaning applied";
         say STDERR Dumper $rh_components;
     }
 
-    # 4. determine the template
+    # 5. determine the template
     my $template_text;
     my $rh_config = $self->{templates}{uc($cc)} || $self->{templates}{default};
     
@@ -366,7 +366,7 @@ sub format_address {
 
     say STDERR 'template text: ' . $template_text if ($debug);
 
-    # 5. clean up the components, possibly add codes
+    # 6. clean up the components, possibly add codes
     $self->_fix_country($rh_components);
     if ($debug){
         say STDERR "after fix_country";
@@ -385,7 +385,7 @@ sub format_address {
         say STDERR Dumper $rh_components;
     }
 
-    # 6. add the attention, but only if needed
+    # 7. add the attention, if needed
     if ($debug){
         say STDERR "object level only_address: $only_address";
         say STDERR "formatting level only_address: $oa";
@@ -412,15 +412,15 @@ sub format_address {
         }
     }
 
-    # 7. abbreviate
+    # 8. abbreviate, if needed
     if ($abbrv) {
         $rh_components = $self->_abbreviate($rh_components);
     }
 
-    # 8. prepare the template
+    # 9. prepare the template
     $template_text = $self->_replace_template_lambdas($template_text);
 
-    # 9. compiled the template
+    # 10. compiled the template
     my $compiled_template =
         $THC->compile($template_text, {'numeric_string_as_string' => 1});
 
@@ -431,12 +431,15 @@ sub format_address {
         say STDERR Dumper $compiled_template;
     }
 
-    # 10. render the template
+    # 11. render the template
     my $text = $self->_render_template($compiled_template, $rh_components);
-    say STDERR "text after _render_template $text" if ($debug);
+    if ($debug){
+        say STDERR "text after _render_template $text";
+    }
 
     # 11. postformatting
     $text = $self->_postformat($text, $rh_config->{postformat_replace});
+
     # 12. clean again
     $text = $self->_clean($text);
 
