@@ -1,5 +1,7 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.998
+
 1.997 2023-03-09
        - revert one minor "improvement" *sigh*
 
