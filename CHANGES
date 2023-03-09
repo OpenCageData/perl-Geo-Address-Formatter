@@ -1,6 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
-1.996
+1.997
+
+1.996 2023-03-09
        - improve private method _apply_replacements
        - newest address-formatting
        
