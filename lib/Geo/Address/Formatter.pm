@@ -101,6 +101,8 @@ sub new {
     $debug         = (defined($params{debug})        && $params{debug})        // 0;
 
     $self->{final_components} = undef;
+    $self->{set_district_alias} = {};
+
     bless($self, $class);
 
     say STDERR "************* in Geo::Address::Formatter::new ***" if ($debug);
@@ -975,6 +977,14 @@ sub _set_district_alias {
     my $self = shift;
     my $cc = shift;
 
+    # this may get called repeatedly
+    # no need to do the work again
+    if (defined($cc)){
+        my $ucc = uc($cc);
+        return if (defined($self->{set_district_alias}{$ucc}));
+        $self->{set_district_alias}{$ucc} = 1;
+    }
+
     my $oldalias;
     if (defined($small_district{$cc})){
         $self->{component2type}{district} = 'neighbourhood';
@@ -996,7 +1006,6 @@ sub _set_district_alias {
     # remove from the old alias list
     my @temp = grep { $_ ne 'district' } @{$self->{component_aliases}{$oldalias}};
     $self->{component_aliases}{$oldalias} = \@temp;
-
     return;
 }  
 
