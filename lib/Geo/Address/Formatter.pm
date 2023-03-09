@@ -778,21 +778,28 @@ sub _apply_replacements {
 
     foreach my $component (keys %$rh_components) {
         foreach my $ra_fromto (@$raa_rules) {
-            try {
-                # do key specific replacement
-                if ($ra_fromto->[0] =~ m/^$component=/) {
-                    my $from = $ra_fromto->[0];
-                    $from =~ s/^$component=//;
-                    if ($rh_components->{$component} eq $from) {
-                        $rh_components->{$component} = $ra_fromto->[1];
-                    }
+
+            my $regexp;
+            # do key specific replacement
+            if ($ra_fromto->[0] =~ m/^$component=/){
+                my $from = $ra_fromto->[0];
+                $from =~ s/^$component=//;
+                if ($rh_components->{$component} eq $from){
+                    $rh_components->{$component} = $ra_fromto->[1];
                 } else {
-                    my $regexp = qr/$ra_fromto->[0]/;
-                    $rh_components->{$component} =~ s/$regexp/$ra_fromto->[1]/;
+                    $regexp = $from;
                 }
-            } catch {
-                warn "invalid replacement: " . join(', ', @$ra_fromto);
-            };
+            } else {
+                $regexp = $ra_fromto->[0];
+            }
+            if (defined($regexp)){
+                try {
+                    my $re = qr/$regexp/;
+                    $rh_components->{$component} =~ s/$re/$ra_fromto->[1]/;
+                } catch {
+                    warn "invalid replacement: " . join(', ', @$ra_fromto);
+                };
+            }
         }
     }
     return $rh_components;
