@@ -83,7 +83,7 @@ I<debug>: prints tons of debugging info for use in development.
 
 I<no_warnings>: turns off a few warnings if configuration is not optimal.
 
-I<only_address>: formatted will only contain known components (will not include POI names like). Note, can be overridden with optional param to format_address method.
+I<only_address>: formatted will only contain known components (will not include POI names). Note, can be overridden with optional param to format_address method.
 
 =cut
 
@@ -118,8 +118,13 @@ sub _read_configuration {
     my $path = shift;
 
     return if (! -e $path);
+    my $compyaml = $path . '/components.yaml';
+    return if (! -e $compyaml);
 
-    my @a_filenames = File::Find::Rule->file()->name('*.yaml')->in($path . '/countries');
+    my @a_filenames = File::Find::Rule
+        ->file({ maxdepth => 1 })
+        ->name('*.yaml')
+        ->in($path . '/countries');
 
     $self->{templates}          = {};
     $self->{component_aliases}  = {};
@@ -148,7 +153,7 @@ sub _read_configuration {
     # see if we can load the components
     try {
         say STDERR "loading components" if ($debug);
-        my @c = LoadFile($path . '/components.yaml');
+        my @c = LoadFile($compyaml);
 
         if ($debug){
             say STDERR Dumper \@c;
@@ -202,7 +207,10 @@ sub _read_configuration {
     }
 
     # get the abbreviations
-    my @abbrv_filenames = File::Find::Rule->file()->name('*.yaml')->in($path . '/abbreviations');
+    my @abbrv_filenames = File::Find::Rule
+        ->file({ maxdepth => 1 })
+        ->name('*.yaml')
+        ->in($path . '/abbreviations');
 
     # read the config files
     foreach my $abbrv_file (@abbrv_filenames) {
