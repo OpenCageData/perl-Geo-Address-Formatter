@@ -123,6 +123,7 @@ sub _read_configuration {
 
     my @a_filenames = File::Find::Rule
         ->new
+        ->file
         ->maxdepth(1)
         ->name('*.yaml')
         ->in($path . '/countries');
@@ -210,6 +211,7 @@ sub _read_configuration {
     # get the abbreviations
     my @abbrv_filenames = File::Find::Rule
         ->new
+        ->file
         ->maxdepth(1)        
         ->name('*.yaml')
         ->in($path . '/abbreviations');
