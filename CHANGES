@@ -1,5 +1,7 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.999
+
 1.998 2023-06-06
       - limit search for .yaml conf to a single directory
 
