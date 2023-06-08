@@ -9,7 +9,6 @@ use Clone qw(clone);
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 use File::Basename qw(dirname);
-use File::Find::Rule;
 use Ref::Util qw(is_hashref);
 use Scalar::Util qw(looks_like_number);
 use Text::Hogan::Compiler;
@@ -118,15 +117,9 @@ sub _read_configuration {
     my $path = shift;
 
     return if (! -e $path);
+    # components file
     my $compyaml = $path . '/components.yaml';
     return if (! -e $compyaml);
-
-    my @a_filenames = File::Find::Rule
-        ->new
-        ->file
-        ->maxdepth(1)
-        ->name('*.yaml')
-        ->in($path . '/countries');
 
     $self->{templates}          = {};
     $self->{component_aliases}  = {};
@@ -135,22 +128,23 @@ sub _read_configuration {
 
     # read the config file(s)
     my $loaded = 0;
-    foreach my $filename (sort @a_filenames) {
-        try {
-            my $rh_templates = LoadFile($filename);
 
-            # if file 00-default.yaml defines 'DE' (Germany) and
-            # file 01-germany.yaml does as well, then the second
-            # occurance of the key overwrites the first.
-            foreach (keys %$rh_templates) {
-                $self->{templates}{$_} = $rh_templates->{$_};
-            }
+    my $wwfile = $path . '/countries/worldwide.yaml';
+    say STDERR "loading templates $wwfile" if ($debug);
+
+    return if (! -e $wwfile);
+
+    try {
+        my $rh_templates = LoadFile($wwfile);
+        foreach (keys %$rh_templates) {
+            $self->{templates}{$_} = $rh_templates->{$_};
             $loaded = 1;
-        } catch {
-            warn "error parsing country configuration in $filename: $_";
-        };
-    }
-    return if ($loaded == 0);
+        }
+    } catch {
+        warn "error parsing country configuration in $wwfile";
+        return;
+    };
+    return if ($loaded == 0);  # no templates
 
     # see if we can load the components
     try {
@@ -208,26 +202,27 @@ sub _read_configuration {
         }
     }
 
-    # get the abbreviations
-    my @abbrv_filenames = File::Find::Rule
-        ->new
-        ->file
-        ->maxdepth(1)        
-        ->name('*.yaml')
-        ->in($path . '/abbreviations');
+    my $abbrvdir = $path . '/abbreviations';
 
-    # read the config files
-    foreach my $abbrv_file (@abbrv_filenames) {
-        try {
-            if ($abbrv_file =~ m/\/(\w\w)\.yaml$/) {
-                my $lang = $1;                   # two letter lang code like 'en'
-                my $rh_c = LoadFile($abbrv_file);
-                $self->{abbreviations}->{$lang} = $rh_c;
+    if (-d $abbrvdir){
+        opendir my $dh, $abbrvdir
+            or die "Could not open '$abbrvdir' for read: $!\n";
+
+        while (my $file = readdir $dh) {
+            # say STDERR "file: $file";
+            if ($file =~ m/^(\w\w)\.yaml$/) {
+                my $lang = $1; # two letter lang code like 'en'
+                my $abbrvfile = $abbrvdir . '/' . $file;
+                try {
+                    $self->{abbreviations}->{$lang} = LoadFile($abbrvfile);
+                } catch {
+                    warn "error parsing abbrv conf in $abbrvfile: $_";
+                };
             }
-        } catch {
-            warn "error parsing abbrv configuration in $abbrv_file: $_";
-        };
+        }
+        closedir $dh;
     }
+
     #say Dumper $self->{abbreviations};
     #say Dumper $self->{country2lang};
     return 1;
