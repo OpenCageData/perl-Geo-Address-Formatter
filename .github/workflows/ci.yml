@@ -1,0 +1,46 @@
+name: CI Tests
+
+on: [push, pull_request]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        version: ['5.30', '5.32', '5.34', '5.36', '5.38']
+
+    env:
+      PERL_CPANM_OPT: "--notest --force --skip-satisfied"
+
+    name: Perl ${{ matrix.version }}
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set up perl
+        uses: shogo82148/actions-setup-perl@v1
+        with:
+          perl-version: ${{ matrix.version }}
+          install-modules-with: cpanm
+
+      - name: Install module
+        run: |
+          cpanm Dist::Zilla
+          dzil authordeps | xargs cpanm
+          export tmpbuild=$(mktemp --directory)
+          dzil build --in $tmpbuild
+          cpanm --quiet --notest Devel::Cover::Report::Coveralls Perl::Critic
+          dzil listdeps | xargs cpanm
+
+      - name: Dzil tests
+        run: dzil test --author
+
+      - name: Tests
+        run: |
+          PERL5OPT=-MDevel::Cover=-coverage,statement,branch,condition,path,subroutine prove -lrsv t
+
+      # - name: Coverall report
+      #   run: cover -report coveralls
