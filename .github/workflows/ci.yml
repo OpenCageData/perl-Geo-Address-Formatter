@@ -17,6 +17,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+        submodules: recursive
+
       - name: Set up perl
         uses: shogo82148/actions-setup-perl@v1
         with:
@@ -29,7 +31,7 @@ jobs:
           dzil authordeps | xargs cpanm
           export tmpbuild=$(mktemp --directory)
           dzil build --in $tmpbuild
-          cpanm --quiet --notest Devel::Cover::Report::Coveralls
+          cpanm --quiet --notest Devel::Cover::Report::Coveralls Perl::Critic
           dzil listdeps | xargs cpanm
 
       - name: Dzil tests
