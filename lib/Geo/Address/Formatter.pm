@@ -716,7 +716,7 @@ sub _add_code {
         my $name    = $rh_components->{$keyname};
         my $uc_name = uc($name);
 
-    LOCCODE: foreach my $abbrv (keys %$mapping) {
+        LOCCODE: foreach my $abbrv (keys %$mapping) {
 
             my @confnames; # can have multiple names for the place
                            # for example in different languages
