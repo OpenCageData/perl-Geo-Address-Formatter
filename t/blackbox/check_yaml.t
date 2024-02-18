@@ -51,6 +51,8 @@ if (-d $path) {
         ok(scalar(@files), 'found at least one yaml file');
 
         foreach my $filename (sort @files) {
+            # to check just one file
+            # next if ($filename !~ m/de.yaml/);
             note('checking ' . $filename);
 
             # special test for main conf file
