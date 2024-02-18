@@ -576,7 +576,7 @@ sub _minimal_components {
     my $self                = shift;
     my $rh_components       = shift || return;
     my @required_components = qw(road postcode); #FIXME - should be in conf
-    my $missing             = 0;                 # number of required components missing
+    my $missing             = 0;  # num required components that are missing
 
     my $minimal_threshold = 2;
     foreach my $c (@required_components) {
@@ -947,7 +947,7 @@ sub _render_template {
 # Text::Hogan apparently caches lambdas when rendering templates. In the past
 # we needed our lambda 'first', example
 #   {{#first}} {{{city}}} || {{{town}}} {{/first}}
-# to evaluate the componentes. Whenever the lambda was called with different
+# to evaluate the components. Whenever the lambda was called with different
 # component values it consumed memory. Now replace with a simpler implementation
 #
 sub _replace_template_lambdas {
