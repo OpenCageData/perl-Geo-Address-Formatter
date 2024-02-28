@@ -264,7 +264,7 @@ Possible options are:
 
     'country', which should be an uppercase ISO 3166-1:alpha-2 code
     e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
-    If ommited we try to find the country in the address components.
+    If omitted we try to find the country in the address components.
 
     'only_address', same as only_address global option but set at formatting level
 
