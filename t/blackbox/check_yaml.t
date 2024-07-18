@@ -94,6 +94,20 @@ if (-d $path) {
                     unlike($text, qr/\t/, 'there is a TAB in the YAML file. That will cause parsing errors');
                 }
 
+                if ($text =~ m/\s+\n/) {
+                    my $line_count = 0;
+                    my $pbool = 0;
+                    foreach my $l (split(/\n/, $text)){
+                        $line_count++;
+                        if ($l =~ m/\s+$/){
+                            if ($pbool == 0){  # print only first time
+                                print STDERR "whitespace at end of line in $filename \n";
+                                $pbool = 1;
+                            }
+                            print STDERR "\tline $line_count : $l \n";
+                        }
+                    }
+                }
                 if ($text !~ m/\n$/) {
                     like($text, qr!\n$!, 'file doesnt end in newline. This will cause parsing errors');
                 }
