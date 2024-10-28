@@ -839,13 +839,14 @@ sub _abbreviate {
         foreach my $lang (@langs) {
             # do we have abbrv for this lang?
             if (defined($self->{abbreviations}->{$lang})) {
-
+                # we have abbreviations
                 my $rh_abbr = $self->{abbreviations}->{$lang};
+
                 foreach my $comp_name (keys %$rh_abbr) {
                     next if (!defined($rh_comp->{$comp_name}));
                     foreach my $long (keys %{$rh_abbr->{$comp_name}}) {
                         my $short = $rh_abbr->{$comp_name}->{$long};
-                        $rh_comp->{$comp_name} =~ s/\b$long\b/$short/;
+                        $rh_comp->{$comp_name} =~ s/(^|\s)$long\b/$1$short/;
                     }
                 }
             } else {
@@ -853,7 +854,6 @@ sub _abbreviate {
             }
         }
     }
-
     return $rh_comp;
 }
 
