@@ -50,14 +50,14 @@ my $GAF = $CLASS->new(conf_path => $conf_path);
 
 # now let's check the files
 my $path = $af_path . '/testcases/';
-my $input_country;
+my $input_lang;
 
 GetOptions(
-    'country:s' => \$input_country,
-    'verbose'   => \$verbose,
+    'lang:s'  => \$input_lang,
+    'verbose' => \$verbose,
 );
-if ($input_country) {
-    $input_country = lc($input_country);
+if ($input_lang) {
+    $input_lang = lc($input_lang);
 }
 
 ok(1);
@@ -70,9 +70,9 @@ if (-d $path){
     my $conf_path = $af_path . '/conf/';
     my $GAF       = $CLASS->new(conf_path => $conf_path);
 
-    # ok, time to actually run the country tests
+    # ok, time to actually run the language specific tests
     sub _one_testcase {
-        my $country     = shift;
+        my $language     = shift;
         my $rh_testcase = shift;
 
         my $expected = $rh_testcase->{expected};
@@ -91,20 +91,20 @@ if (-d $path){
                 $c++;
             }
         }
-        is($actual, $expected, $country . ' - ' . ($rh_testcase->{description} || 'no description set'));
+        is($actual, $expected, $language . ' - ' . ($rh_testcase->{description} || 'no description set'));
     }
 
-    # get list of country specific tests
+    # get list of language specific tests
     my @files = File::Find::Rule->file()->name('*.yaml')->in($path);
     foreach my $filename (sort @files) {
         next if ($filename !~ m/abbreviations/);  # others tested by countries.t
-        my $country = basename($filename);
-        $country =~ s/\.\w+$//; # us.yaml => us
+        my $lang = basename($filename);
+        $lang =~ s/\.\w+$//; # de.yaml => de
 
-        if (defined($input_country) && $input_country) {
-            if ($country ne $input_country) {
+        if (defined($input_lang) && $input_lang) {
+            if ($lang ne $input_lang) {
                 if ($verbose) {
-                    warn "skipping $country tests";
+                    warn "skipping $lang abbreviation tests";
                 }
                 next;
             }
@@ -117,7 +117,7 @@ if (-d $path){
         "parsing file $filename";
 
         foreach my $rh_testcase (@a_testcases) {
-            _one_testcase($country, $rh_testcase);
+            _one_testcase($lang, $rh_testcase);
         }
     }
 }
