@@ -1,5 +1,7 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.9984
+
 1.9983 2024-10-28
       - more tests for abbreviations (one yaml file per language)
       - change regex used in abbreviations
