@@ -122,25 +122,6 @@ if (-d $path){
     }
 }
 
-#{
-#    # is the correct abbreviation set?
-#    my %input = (
-#        "city"         => "München",
-#        "country"      => "Deutschland",
-#        "country_code" => "de",
-#        "house_number" => "6",
-#        "postcode"     => "81829",
-#        "road"         => "Willy-Brandt-Platz",
-#        "state"        => "Bayern",
-#    );
-#
-#    my $formatted = $GAF->format_address(\%input, { abbreviate => 1 });
-#    $formatted =~ s/\n/, /g;
-#    $formatted =~ s/, $//g;    
-#    is ($formatted, 'Willy-Brandt-Platz 6, 81829 München, Deutschland', 'correct abbreviated formatted')
-#}
-
-
 done_testing();
 
 1;
