@@ -176,11 +176,12 @@ sub _read_configuration {
                 }
             }
         }
+        my %h_known = map { $_ => 1 } @{$self->{ordered_components}};
+        $self->{h_known} = \%h_known;
+
         if ($debug){
             say STDERR 'component_aliases';
             say STDERR Dumper $self->{component_aliases};
-            say STDERR 'ordered_components';
-            say STDERR Dumper $self->{ordered_components};
             say STDERR 'component2type';
             say STDERR Dumper $self->{component2type};
         }
@@ -438,11 +439,11 @@ sub format_address {
     }
     else {
         my $ra_unknown = $self->_find_unknown_components($rh_components);
-        if ($debug){
-            say STDERR "unknown_components:";
-            say STDERR Dumper $ra_unknown;
-        }
         if (scalar(@$ra_unknown)){
+            if ($debug){
+                say STDERR "unknown_components:";
+                say STDERR Dumper $ra_unknown;
+            }
             $rh_components->{attention} =
                 join(', ', map { $rh_components->{$_} } @$ra_unknown);
             if ($debug){
@@ -1033,11 +1034,10 @@ sub _set_district_alias {
 
 # returns []
 sub _find_unknown_components {
-    my $self       = shift;
-    my $rh_components = shift;
+    my $self    = shift;
+    my $rh_comp = shift;
 
-    my %h_known   = map  { $_ => 1 } @{$self->{ordered_components}};
-    my @a_unknown = grep { !exists($h_known{$_}) } sort keys %$rh_components;
+    my @a_unknown = grep { !exists($self->{h_known}->{$_}) } keys %$rh_comp;
     return \@a_unknown;
 }
 
