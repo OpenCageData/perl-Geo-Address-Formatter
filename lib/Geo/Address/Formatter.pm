@@ -483,7 +483,7 @@ sub format_address {
     # 12. clean again
     $text = $self->_clean($text);
 
-    # 13. set final components
+    # 13. set final components (so we can get them later)
     $self->{final_components} = $rh_components;
 
     # all done
@@ -937,9 +937,9 @@ sub _render_template {
     $output = $self->_clean($output);
 
     # is it empty?
-    # if yes and there is only one component then just use that one
-    if ($output !~ m/\w/) {
-        my @comps = sort keys %$components;
+    if (length($output) == 0){
+        # if yes and there is only one component then just use that one
+        my @comps = keys %$components;
         if (scalar(@comps) == 1) {
             foreach my $k (@comps) {
                 $output = $components->{$k};
