@@ -311,10 +311,16 @@ sub format_address {
         say STDERR "component_aliases";
         say STDERR Dumper $self->{component_aliases};
     }
-
     # done with the options
 
-    # 3. set the aliases, unless this would overwrite something
+    # 3. deal wtih terrible inputs
+    $self->_sanity_cleaning($rh_components);
+    if ($debug){
+        say STDERR "after sanity_cleaning applied";
+        say STDERR Dumper $rh_components;
+    }
+
+    # 4. set the aliases, unless this would overwrite something
     # need to do this in the right order (as defined in the components file)
     # For example:
     # both 'city_district' and 'suburb' are aliases of 'neighbourhood'
@@ -361,13 +367,6 @@ sub format_address {
 
     if ($debug){
         say STDERR "after component_aliases applied";
-        say STDERR Dumper $rh_components;
-    }
-
-    # 4. deal wtih terrible inputs
-    $self->_sanity_cleaning($rh_components);
-    if ($debug){
-        say STDERR "after sanity_cleaning applied";
         say STDERR Dumper $rh_components;
     }
 
@@ -605,7 +604,7 @@ sub _determine_country_code {
     if (my $cc = lc($rh_components->{country_code})) {
 
         # is it two letters long?
-        return      if ($cc !~ m/^[a-z][a-z]$/);
+        return      if (length($cc) != 2);
         return 'GB' if ($cc eq 'uk');
 
         $cc = uc($cc);
@@ -663,17 +662,14 @@ sub _determine_country_code {
 
 # hacks for bad country data
 sub _fix_country {
-    my $self          = shift;
-    my $rh_components = shift || return;
+    my $self = shift;
+    my $rh_c = shift || return;
 
     # is the country a number?
     # if so, and there is a state, use state as country
-    if (defined($rh_components->{country})) {
-        if (looks_like_number($rh_components->{country})) {
-            if (defined($rh_components->{state})) {
-                $rh_components->{country} = $rh_components->{state};
-                delete $rh_components->{state};
-            }
+    if (defined($rh_c->{country}) && defined($rh_c->{state})){
+        if (looks_like_number($rh_c->{country})){
+            $rh_c->{country} = delete $rh_c->{state};
         }
     }
     return;
@@ -683,14 +679,20 @@ sub _fix_country {
 # note may also set other values in some odd edge cases
 sub _add_state_code {
     my $self          = shift;
-    my $rh_components = shift;
-    return $self->_add_code('state', $rh_components);
+    my $rh_components = shift // return;
+    if (defined($rh_components->{state})){
+        return $self->_add_code('state', $rh_components);
+    }
+    return;
 }
 
 sub _add_county_code {
     my $self          = shift;
-    my $rh_components = shift;
-    return $self->_add_code('county', $rh_components);
+    my $rh_components = shift // return;
+    if (defined($rh_components->{county})){
+        return $self->_add_code('county', $rh_components);
+    }
+    return;
 }
 
 sub _add_code {
@@ -702,18 +704,15 @@ sub _add_code {
 
     my $code = $keyname . '_code';
 
-    if (defined($rh_components->{$code})) {    # do we already have code?
-                                               # but could have situation
-                                               # where code and long name are
-                                               # the same which we want to correct
-        if ($rh_components->{$code} ne $rh_components->{$keyname}) {
-            return;
-        }
+    if (defined($rh_components->{$code})) {
+        # do we already have code?
+        # we could have situation where code and long name are same
+        # so we want to corrent
+        return if ($rh_components->{$code} ne $rh_components->{$keyname});
     }
 
     # ensure country_code is uppercase as we use it as conf key
-    $rh_components->{country_code} = uc($rh_components->{country_code});
-    my $cc = $rh_components->{country_code};
+    my $cc = uc($rh_components->{country_code});
 
     if (my $mapping = $self->{$code . 's'}{$cc}) {
 
@@ -731,7 +730,9 @@ sub _add_code {
                 push(@confnames, $mapping->{$abbrv});
             }
 
+            # FIXME: should only uc the names once when reading from conf
             foreach my $confname (@confnames) {
+
                 if ($uc_name eq uc($confname)) {
                     $rh_components->{$code} = $abbrv;
                     last LOCCODE;
@@ -752,9 +753,9 @@ sub _add_code {
         # didn't find a valid code or name
 
         # try again for odd variants like "United States Virgin Islands"
-        if ($keyname eq 'state') {
-            if (!defined($rh_components->{state_code})) {
-                if ($cc eq 'US') {
+        if ($cc eq 'US') {
+            if ($keyname eq 'state') {
+                if (!defined($rh_components->{state_code})) {
                     if ($rh_components->{state} =~ m/^united states/i) {
                         my $state = $rh_components->{state};
                         $state =~ s/^United States/US/i;
@@ -976,15 +977,15 @@ sub _select_first {
 }
 
 my %small_district = (
-    'br' => 1,
-    'cr' => 1,
-    'es' => 1,
-    'ni' => 1,
-    'py' => 1,
-    'ro' => 1,
-    'tg' => 1,
-    'tm' => 1,
-    'xk' => 1,
+    'BR' => 1,
+    'CR' => 1,
+    'ES' => 1,
+    'NI' => 1,
+    'PY' => 1,
+    'RO' => 1,
+    'TG' => 1,
+    'TM' => 1,
+    'XK' => 1,
 );
 
 # correct the alias for "district"
@@ -992,18 +993,19 @@ my %small_district = (
 # others to mean "state_district"
 sub _set_district_alias {
     my $self = shift;
-    my $cc = shift;
+    my $cc = shift // return;
+
+    my $ucc = uc($cc);
 
     # this may get called repeatedly
     # no need to do the work again
-    if (defined($cc)){
-        my $ucc = uc($cc);
-        return if (defined($self->{set_district_alias}{$ucc}));
-        $self->{set_district_alias}{$ucc} = 1;
-    }
+    return if (defined($self->{set_district_alias}{$ucc}));
+
+    # note that we are here so don't do this work again
+    $self->{set_district_alias}{$ucc} = 1;
 
     my $oldalias;
-    if (defined($small_district{$cc})){
+    if (defined($small_district{$ucc})){
         $self->{component2type}{district} = 'neighbourhood';
         $oldalias = 'state_district';
 
@@ -1021,7 +1023,9 @@ sub _set_district_alias {
     } 
 
     # remove from the old alias list
-    my @temp = grep { $_ ne 'district' } @{$self->{component_aliases}{$oldalias}};
+    my @temp = grep { $_ ne 'district' }
+               @{$self->{component_aliases}{$oldalias}};
+    
     $self->{component_aliases}{$oldalias} = \@temp;
     return;
 }  
