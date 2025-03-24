@@ -1,6 +1,9 @@
 Revision history for Perl module Geo::Address::Formatter.
 
-1.9984
+1.9984 2025-03-24
+      - code clean up, improved performance
+      - add Ref::Util::XS as dependency
+      - newest address-formatting
 
 1.9983 2024-10-28
       - more tests for abbreviations (one yaml file per language)
