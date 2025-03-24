@@ -251,8 +251,8 @@ sub final_components {
 
   my $text = $GAF->format_address(\%components, \%options );
 
-Given a structures address (hashref) and options (hashref) returns a
-formatted address.
+Given structured address components (hashref) and options (hashref) returns a
+formatted address (string).
 
 Possible options are:
 
@@ -409,11 +409,15 @@ sub format_address {
         say STDERR Dumper $rh_components;
     }
 
-    $self->_apply_replacements($rh_components, $rh_config->{replace});
-    if ($debug){
-        say STDERR "after applying_replacements applied";
-        say STDERR Dumper $rh_components;
+    # apply replacements if we have any
+    if (defined($rh_config->{replace})){
+        $self->_apply_replacements($rh_components, $rh_config->{replace});
+        if ($debug){
+            say STDERR "after applying_replacements applied";
+            say STDERR Dumper $rh_components;
+        }
     }
+
     $self->_add_state_code($rh_components);
     $self->_add_county_code($rh_components);
     if ($debug){
@@ -776,7 +780,7 @@ sub _add_code {
 sub _apply_replacements {
     my $self          = shift;
     my $rh_components = shift;
-    my $raa_rules     = shift;
+    my $raa_rules     = shift // return; # bail out if no rules
 
     if ($debug){
         say STDERR "in _apply_replacements";
@@ -785,7 +789,6 @@ sub _apply_replacements {
 
     foreach my $component (keys %$rh_components) {
         foreach my $ra_fromto (@$raa_rules) {
-
             my $regexp;
             # do key specific replacement
             if ($ra_fromto->[0] =~ m/^$component=/){
