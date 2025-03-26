@@ -444,8 +444,10 @@ sub format_address {
                 say STDERR "unknown_components:";
                 say STDERR Dumper $ra_unknown;
             }
+            # need to sort for consistency
+            # FIXME - add better sorting based on meaning of the values
             $rh_components->{attention} =
-                join(', ', map { $rh_components->{$_} } @$ra_unknown);
+                join(', ', map { $rh_components->{$_} } sort @$ra_unknown);
             if ($debug){
                 say STDERR "putting unknown_components in 'attention'";
             }
