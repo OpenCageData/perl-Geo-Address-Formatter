@@ -792,6 +792,9 @@ sub _apply_replacements {
     }
 
     foreach my $component (keys %$rh_components) {
+        # some components dont need replacements
+        next if ($component eq 'country_code');
+        next if ($component eq 'house_number');
         foreach my $ra_fromto (@$raa_rules) {
             my $regexp;
             # do key specific replacement
