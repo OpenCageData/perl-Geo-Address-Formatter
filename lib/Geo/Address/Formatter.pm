@@ -473,19 +473,20 @@ sub format_address {
         say STDERR Dumper $compiled_template;
     }
 
+
     # 11. render the template
     my $text = $self->_render_template($compiled_template, $rh_components);
     if ($debug){
         say STDERR "text after _render_template $text";
     }
 
-    # 11. postformatting
+    # 12. postformatting
     $text = $self->_postformat($text, $rh_config->{postformat_replace});
 
-    # 12. clean again
+    # 13. clean again
     $text = $self->_clean($text);
 
-    # 13. set final components (so we can get them later)
+    # 14. set final components (so we can get them later)
     $self->{final_components} = $rh_components;
 
     # all done
@@ -499,7 +500,8 @@ sub _postformat {
     my $raa_rules = shift;
 
     if ($debug){
-        say STDERR "entering _postformat: $text"
+        say STDERR "entering _postformat: $text";
+        say STDERR Dumper $raa_rules;
     }
 
     # remove duplicates
