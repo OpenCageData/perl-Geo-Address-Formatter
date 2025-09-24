@@ -813,7 +813,7 @@ sub _apply_replacements {
             }
             if (defined($regexp)){
                 try {
-                    my $re = qr/$regexp/;
+                    my $re = qr/$regexp/i;
                     $rh_components->{$component} =~ s/$re/$ra_fromto->[1]/;
                 } catch {
                     warn "invalid replacement: " . join(', ', @$ra_fromto);
