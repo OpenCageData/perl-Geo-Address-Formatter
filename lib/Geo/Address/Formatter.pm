@@ -287,6 +287,13 @@ sub format_address {
 
     # 2. deal with the options
 
+    foreach (grep { ! /^[a-z0-9_]+$/ } keys %$rh_components) {
+        if ($debug){
+            say STDERR "Skipping compontent $_";
+        }
+        delete $rh_components->{$_};
+    }
+
     # 2a. which country format will we use?
     #     might have been specified in options
     #     otherwise look at components
