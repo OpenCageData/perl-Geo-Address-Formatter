@@ -226,7 +226,137 @@ sub _read_configuration {
 
     #say Dumper $self->{abbreviations};
     #say Dumper $self->{country2lang};
+
+    $self->_precompile_rules();
+    $self->_build_code_lookups();
+    $self->_precompile_abbreviations();
+
     return 1;
+}
+
+sub _precompile_rules {
+    my $self = shift;
+
+    foreach my $cc (keys %{$self->{templates}}) {
+        my $tpl = $self->{templates}{$cc};
+        next unless is_hashref($tpl);
+
+        # Pre-compile replace rules
+        if (defined($tpl->{replace})) {
+            my @compiled;
+            foreach my $ra_fromto (@{$tpl->{replace}}) {
+                my $pattern = $ra_fromto->[0];
+                my $replacement = $ra_fromto->[1];
+                my ($comp_name, $exact_match, $re);
+
+                # detect component-specific rules like "state=Some Value"
+                if ($pattern =~ m/^(\w+)=(.+)$/) {
+                    $comp_name = $1;
+                    my $rest = $2;
+                    # try to compile as regex; if it fails, it's an exact match
+                    eval { $re = qr/$rest/i };
+                    if ($@) {
+                        warn "invalid replacement regex '$rest' for $cc, skipping";
+                        next;
+                    }
+                    $exact_match = $rest;
+                } else {
+                    eval { $re = qr/$pattern/i };
+                    if ($@) {
+                        warn "invalid replacement regex '$pattern' for $cc, skipping";
+                        next;
+                    }
+                }
+                push @compiled, {
+                    component   => $comp_name,
+                    exact_match => $exact_match,
+                    re          => $re,
+                    replacement => $replacement,
+                };
+            }
+            $tpl->{_compiled_replace} = \@compiled;
+        }
+
+        # Pre-compile postformat_replace rules
+        if (defined($tpl->{postformat_replace})) {
+            my @compiled;
+            foreach my $ra_fromto (@{$tpl->{postformat_replace}}) {
+                my $pattern = $ra_fromto->[0];
+                my $replacement = $ra_fromto->[1];
+                my $re;
+                eval { $re = qr/$pattern/ };
+                if ($@) {
+                    warn "invalid postformat regex '$pattern' for $cc, skipping";
+                    next;
+                }
+                push @compiled, {
+                    re          => $re,
+                    replacement => $replacement,
+                };
+            }
+            $tpl->{_compiled_postformat} = \@compiled;
+        }
+    }
+    return;
+}
+
+sub _build_code_lookups {
+    my $self = shift;
+
+    foreach my $type (qw(state_codes county_codes)) {
+        my $reverse_key = $type . '_reverse';
+        my $name_key    = $type . '_name';
+        $self->{$reverse_key} = {};
+        $self->{$name_key}    = {};
+
+        my $data = $self->{$type} // next;
+        foreach my $cc (keys %$data) {
+            my $mapping = $data->{$cc};
+            my $rev  = {};
+            my $name = {};
+
+            foreach my $code (keys %$mapping) {
+                my $val = $mapping->{$code};
+                if (is_hashref($val)) {
+                    # hash with default, alt, alt_XX keys
+                    my $default_name = $val->{default};
+                    $name->{$code} = $default_name if defined $default_name;
+                    foreach my $v (values %$val) {
+                        $rev->{uc($v)} = $code;
+                    }
+                } else {
+                    # simple string value
+                    $name->{$code} = $val;
+                    $rev->{uc($val)} = $code;
+                }
+                # code-to-code identity lookup
+                $rev->{$code} = $code;
+            }
+            $self->{$reverse_key}{$cc} = $rev;
+            $self->{$name_key}{$cc}    = $name;
+        }
+    }
+    return;
+}
+
+sub _precompile_abbreviations {
+    my $self = shift;
+    my $abbr = $self->{abbreviations} // return;
+
+    foreach my $lang (keys %$abbr) {
+        foreach my $comp_name (keys %{$abbr->{$lang}}) {
+            my $rh_pairs = $abbr->{$lang}{$comp_name};
+            my @compiled;
+            foreach my $long (keys %$rh_pairs) {
+                push @compiled, {
+                    re    => qr/(^|\s)\Q$long\E\b/,
+                    short => $rh_pairs->{$long},
+                };
+            }
+            $self->{compiled_abbreviations}{$lang}{$comp_name} = \@compiled;
+        }
+    }
+    return;
 }
 
 =head2 final_components
@@ -417,8 +547,8 @@ sub format_address {
     }
 
     # apply replacements if we have any
-    if (defined($rh_config->{replace})){
-        $self->_apply_replacements($rh_components, $rh_config->{replace});
+    if (defined($rh_config->{_compiled_replace})){
+        $self->_apply_replacements($rh_components, $rh_config->{_compiled_replace});
         if ($debug){
             say STDERR "after applying_replacements applied";
             say STDERR Dumper $rh_components;
@@ -470,8 +600,8 @@ sub format_address {
     $template_text = $self->_replace_template_lambdas($template_text);
 
     # 10. compiled the template
-    my $compiled_template =
-        $THC->compile($template_text, {'numeric_string_as_string' => 1});
+    my $compiled_template = $self->{compiled_template_cache}{$template_text}
+        //= $THC->compile($template_text, {'numeric_string_as_string' => 1});
 
     if ($debug){
         say STDERR "before _render_template";
@@ -488,7 +618,7 @@ sub format_address {
     }
 
     # 12. postformatting
-    $text = $self->_postformat($text, $rh_config->{postformat_replace});
+    $text = $self->_postformat($text, $rh_config->{_compiled_postformat});
 
     # 13. clean again
     $text = $self->_clean($text);
@@ -526,29 +656,25 @@ sub _postformat {
     $text = join(', ', @after_pieces);
 
     # do any country specific rules
-    foreach my $ra_fromto (@$raa_rules) {
-        try {
-            my $regexp = qr/$ra_fromto->[0]/;
-            my $replacement = $ra_fromto->[1];
+    foreach my $rule (@$raa_rules) {
+        my $regexp = $rule->{re};
+        my $replacement = $rule->{replacement};
 
-            # ultra hack to do substitution
-            # limited to $1 and $2, should really be a while loop
-            # doing every substitution
+        # ultra hack to do substitution
+        # limited to $1 and $2, should really be a while loop
+        # doing every substitution
 
-            if ($replacement =~ m/\$\d/) {
-                if ($text =~ m/$regexp/) {
-                    my $tmp1 = $1;
-                    my $tmp2 = $2;
-                    my $tmp3 = $3;
-                    $replacement =~ s/\$1/$tmp1/;
-                    $replacement =~ s/\$2/$tmp2/;
-                    $replacement =~ s/\$3/$tmp3/;
-                }
+        if ($replacement =~ m/\$\d/) {
+            if ($text =~ m/$regexp/) {
+                my $tmp1 = $1;
+                my $tmp2 = $2;
+                my $tmp3 = $3;
+                $replacement =~ s/\$1/$tmp1/;
+                $replacement =~ s/\$2/$tmp2/;
+                $replacement =~ s/\$3/$tmp3/;
             }
-            $text =~ s/$regexp/$replacement/;
-        } catch {
-            warn "invalid replacement: " . join(', ', @$ra_fromto);
-        };
+        }
+        $text =~ s/$regexp/$replacement/;
     }
     return $text;
 }
@@ -726,64 +852,36 @@ sub _add_code {
     # ensure country_code is uppercase as we use it as conf key
     my $cc = uc($rh_components->{country_code});
 
-    if (my $mapping = $self->{$code . 's'}{$cc}) {
+    my $reverse_key = $code . 's_reverse';
+    my $name_key    = $code . 's_name';
 
+    if (my $rev = $self->{$reverse_key}{$cc}) {
         my $name    = $rh_components->{$keyname};
         my $uc_name = uc($name);
 
-        LOCCODE: foreach my $abbrv (keys %$mapping) {
-
-            my @confnames; # can have multiple names for the place
-                           # for example in different languages
-
-            if (is_hashref($mapping->{$abbrv})) {
-                push(@confnames, values %{$mapping->{$abbrv}});
-            } else {
-                push(@confnames, $mapping->{$abbrv});
-            }
-
-            # FIXME: should only uc the names once when reading from conf
-            foreach my $confname (@confnames) {
-
-                if ($uc_name eq uc($confname)) {
-                    $rh_components->{$code} = $abbrv;
-                    last LOCCODE;
-                }
-                # perhaps instead of passing in a name, we passed in a code
-                # example: state => 'NC'
-                # we want to turn that into
-                #     state => 'North Carolina'
-                #     state_code => 'NC'
-                #
-                if ($uc_name eq $abbrv) {
-                    $rh_components->{$keyname} = $confname;
-                    $rh_components->{$code}    = $abbrv;
-                    last LOCCODE;
-                }
+        if (my $found_code = $rev->{$uc_name}) {
+            # matched a name -> code
+            $rh_components->{$code} = $found_code;
+            # if input was a code (e.g. state => 'NC'), set keyname to full name
+            if ($uc_name eq $found_code) {
+                my $full_name = $self->{$name_key}{$cc}{$found_code};
+                $rh_components->{$keyname} = $full_name if defined $full_name;
             }
         }
-        # didn't find a valid code or name
 
-        # try again for odd variants like "United States Virgin Islands"
-        if ($cc eq 'US') {
-            if ($keyname eq 'state') {
-                if (!defined($rh_components->{state_code})) {
-                    if ($rh_components->{state} =~ m/^united states/i) {
-                        my $state = $rh_components->{state};
-                        $state =~ s/^United States/US/i;
-                        foreach my $k (keys %$mapping) {
-                            if (uc($state) eq uc($k)) {
-                                $rh_components->{state_code} = $mapping->{$k};
-                                last;
-                            }
-                        }
-                    }
-                    if ($rh_components->{state} =~ m/^washington,? d\.?c\.?/i) {
-                        $rh_components->{state_code} = 'DC';
-                        $rh_components->{state}      = 'District of Columbia';
-                        $rh_components->{city}       = 'Washington';
-                    }
+        # US-specific edge cases
+        if ($cc eq 'US' && $keyname eq 'state' && !defined($rh_components->{state_code})) {
+            if ($rh_components->{state} =~ m/^united states/i) {
+                my $state = $rh_components->{state};
+                $state =~ s/^United States/US/i;
+                if (my $fc = $rev->{uc($state)}) {
+                    $rh_components->{state_code} = $fc;
                 }
+            }
+            if ($rh_components->{state} =~ m/^washington,? d\.?c\.?/i) {
+                $rh_components->{state_code} = 'DC';
+                $rh_components->{state}      = 'District of Columbia';
+                $rh_components->{city}       = 'Washington';
             }
         }
     }
@@ -793,38 +891,59 @@ sub _add_code {
 sub _apply_replacements {
     my $self          = shift;
     my $rh_components = shift;
-    my $raa_rules     = shift // return; # bail out if no rules
+    my $ra_rules      = shift // return; # bail out if no rules
 
     if ($debug){
         say STDERR "in _apply_replacements";
-        say STDERR Dumper $raa_rules;
+        say STDERR Dumper $ra_rules;
+    }
+
+    # support legacy raw array-of-arrays format (used by tests)
+    if (ref($ra_rules) eq 'ARRAY' && @$ra_rules && ref($ra_rules->[0]) eq 'ARRAY') {
+        foreach my $component (keys %$rh_components) {
+            next if ($component eq 'country_code');
+            next if ($component eq 'house_number');
+            foreach my $ra_fromto (@$ra_rules) {
+                my $regexp;
+                if ($ra_fromto->[0] =~ m/^$component=/) {
+                    my $from = $ra_fromto->[0];
+                    $from =~ s/^$component=//;
+                    if ($rh_components->{$component} eq $from) {
+                        $rh_components->{$component} = $ra_fromto->[1];
+                    } else {
+                        $regexp = $from;
+                    }
+                } else {
+                    $regexp = $ra_fromto->[0];
+                }
+                if (defined($regexp)) {
+                    try {
+                        my $re = qr/$regexp/i;
+                        $rh_components->{$component} =~ s/$re/$ra_fromto->[1]/;
+                    } catch {
+                        warn "invalid replacement: " . join(', ', @$ra_fromto);
+                    };
+                }
+            }
+        }
+        return $rh_components;
     }
 
     foreach my $component (keys %$rh_components) {
         # some components dont need replacements
         next if ($component eq 'country_code');
         next if ($component eq 'house_number');
-        foreach my $ra_fromto (@$raa_rules) {
-            my $regexp;
-            # do key specific replacement
-            if ($ra_fromto->[0] =~ m/^$component=/){
-                my $from = $ra_fromto->[0];
-                $from =~ s/^$component=//;
-                if ($rh_components->{$component} eq $from){
-                    $rh_components->{$component} = $ra_fromto->[1];
+        foreach my $rule (@$ra_rules) {
+            if (defined($rule->{component})) {
+                # component-specific rule: only applies to matching component
+                next if ($rule->{component} ne $component);
+                if ($rh_components->{$component} eq $rule->{exact_match}) {
+                    $rh_components->{$component} = $rule->{replacement};
                 } else {
-                    $regexp = $from;
+                    $rh_components->{$component} =~ s/$rule->{re}/$rule->{replacement}/;
                 }
             } else {
-                $regexp = $ra_fromto->[0];
-            }
-            if (defined($regexp)){
-                try {
-                    my $re = qr/$regexp/i;
-                    $rh_components->{$component} =~ s/$re/$ra_fromto->[1]/;
-                } catch {
-                    warn "invalid replacement: " . join(', ', @$ra_fromto);
-                };
+                $rh_components->{$component} =~ s/$rule->{re}/$rule->{replacement}/;
             }
         }
     }
@@ -856,16 +975,14 @@ sub _abbreviate {
         my @langs = split(/,/, $self->{country2lang}{$cc});
 
         foreach my $lang (@langs) {
-            # do we have abbrv for this lang?
-            if (defined($self->{abbreviations}->{$lang})) {
-                # we have abbreviations
-                my $rh_abbr = $self->{abbreviations}->{$lang};
+            # do we have compiled abbrv for this lang?
+            if (defined($self->{compiled_abbreviations}{$lang})) {
+                my $rh_compiled = $self->{compiled_abbreviations}{$lang};
 
-                foreach my $comp_name (keys %$rh_abbr) {
+                foreach my $comp_name (keys %$rh_compiled) {
                     next if (!defined($rh_comp->{$comp_name}));
-                    foreach my $long (keys %{$rh_abbr->{$comp_name}}) {
-                        my $short = $rh_abbr->{$comp_name}->{$long};
-                        $rh_comp->{$comp_name} =~ s/(^|\s)$long\b/$1$short/;
+                    foreach my $rule (@{$rh_compiled->{$comp_name}}) {
+                        $rh_comp->{$comp_name} =~ s/$rule->{re}/$1$rule->{short}/;
                     }
                 }
             } else {
@@ -941,7 +1058,7 @@ sub _render_template {
     my $components = shift;
 
     # Mustache calls it context
-    my $context = clone($components);
+    my $context = $components;
     say STDERR 'context: ' . Dumper $context if ($debug);
     my $output = $thtemplate->render($context);
 
