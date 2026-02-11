@@ -78,11 +78,23 @@ Returns one instance. The I<conf_path> is required.
 
 Optional parameters are:
 
-I<debug>: prints tons of debugging info for use in development.
+=over
 
-I<no_warnings>: turns off a few warnings if configuration is not optimal.
+=item * I<debug>
 
-I<only_address>: formatted will only contain known components (will not include POI names). Note, can be overridden with optional param to format_address method.
+Prints tons of debugging info for use in development.
+
+=item * I<no_warnings>
+
+Turns off a few warnings if configuration is not optimal.
+
+=item * I<only_address>
+
+Formatted output will only contain known address components (will not
+include POI names). Can be overridden per-call via the I<only_address>
+option to L</format_address>.
+
+=back
 
 =cut
 
@@ -363,9 +375,10 @@ sub _precompile_abbreviations {
 
   my $rh_components = $GAF->final_components();
 
-returns a reference to a hash of the final components that are set at the
-completion of B<format_address>. Warns if called before they have been set 
-(unless I<no_warnings> was set at object creation).
+Returns a reference to a hash of the final components that were set during
+the most recent call to B<format_address>.  Returns C<undef> if called
+before B<format_address> has been called.  Warns in that case unless
+I<no_warnings> was set at object creation.
 
 =cut
 
@@ -383,21 +396,32 @@ sub final_components {
   my $text = $GAF->format_address(\%components, \%options );
 
 Given structured address components (hashref) and options (hashref) returns a
-formatted address (string).
+formatted address as a multiline string with a trailing newline.
 
 Possible options are:
 
-    'abbreviate', if supplied common abbreviations are applied
-    to the resulting output.
+=over
 
-    'address_template', a mustache format template to be used instead of the template
-    defined in the configuration
+=item * I<abbreviate>
 
-    'country', which should be an uppercase ISO 3166-1:alpha-2 code
-    e.g. 'GB' for Great Britain, 'DE' for Germany, etc.
-    If omitted we try to find the country in the address components.
+If true, common abbreviations are applied to the resulting output.
 
-    'only_address', same as only_address global option but set at formatting level
+=item * I<address_template>
+
+A Mustache-format template to be used instead of the template defined in
+the configuration.
+
+=item * I<country>
+
+An uppercase ISO 3166-1 alpha-2 code, e.g. C<'GB'> for Great Britain,
+C<'DE'> for Germany, etc.  If omitted the country is determined from
+the address components.
+
+=item * I<only_address>
+
+Same as the I<only_address> constructor option but applied per-call.
+
+=back
 
 =cut
 
@@ -1171,5 +1195,14 @@ sub _find_unknown_components {
     my @a_unknown = grep { !exists($self->{h_known}->{$_}) } keys %$rh_comp;
     return \@a_unknown;
 }
+
+=head1 SEE ALSO
+
+L<https://github.com/OpenCageData/address-formatting> - the address
+formatting template configuration used by this module.
+
+L<https://opencagedata.com> - OpenCage geocoder.
+
+=cut
 
 1;
