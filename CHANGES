@@ -1,6 +1,8 @@
 Revision history for Perl module Geo::Address::Formatter.
 
-1.9990
+1.9990 2026-02-11
+      - speed optimizations
+      - improved POD
 
 1.9989 2025-10-31
       - drop components with special characters, test
