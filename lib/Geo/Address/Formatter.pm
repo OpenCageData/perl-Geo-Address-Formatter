@@ -74,7 +74,7 @@ Together we can address the world!
 
   my $GAF = Geo::Address::Formatter->new( conf_path => '/path/to/templates' );
 
-Returns one instance. The I<conf_path> is required.
+Returns new object. The I<conf_path> is required.
 
 Optional parameters are:
 
@@ -98,6 +98,35 @@ option to L</format_address>.
 
 =cut
 
+
+=head2 instance
+
+  my $GAF = Geo::Address::Formatter->instance( conf_path => '/path/to/templates' );
+
+Returns new instance (potentially re-used) The I<conf_path> is required.
+
+Optional parameters are as in the B<new> method.
+
+=cut
+
+my $instance;
+
+sub instance {
+    my ($class, %params) = @_;    
+    
+    unless ($instance) {
+        $instance = $class->new(@_);
+    }
+
+    say STDERR "************* in Geo::Address::Formatter::instance ***" if ($debug);
+    
+    # clear these fields that change on each run
+    $instance->{final_components} = undef;
+    $instance->{set_district_alias} = {};
+
+    return $instance;
+}
+
 sub new {
     my ($class, %params) = @_;
 
@@ -117,7 +146,8 @@ sub new {
     bless($self, $class);
 
     say STDERR "************* in Geo::Address::Formatter::new ***" if ($debug);
-    
+
+    # is slow because lots of conf, and pre-compiling
     if ($self->_read_configuration($conf_path)){
         return $self;
     }
