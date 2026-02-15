@@ -1,5 +1,7 @@
 Revision history for Perl module Geo::Address::Formatter.
 
+1.9992
+
 1.9991 2026-02-15
       - new instance method for creating singleton and reusing across requests under mod_perl
 
