@@ -112,10 +112,10 @@ Optional parameters are as in the B<new> method.
 my $instance;
 
 sub instance {
-    my ($class, %params) = @_;    
+    my ($class, %params) = @_;
     
     unless ($instance) {
-        $instance = $class->new(@_);
+        $instance = $class->new(%params);
     }
 
     say STDERR "************* in Geo::Address::Formatter::instance ***" if ($debug);
