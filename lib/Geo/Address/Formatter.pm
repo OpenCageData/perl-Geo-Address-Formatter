@@ -5,7 +5,6 @@ package Geo::Address::Formatter;
 use strict;
 use warnings;
 use feature qw(say);
-use Clone qw(clone);
 use Data::Dumper;
 $Data::Dumper::Sortkeys = 1;
 use File::Basename qw(dirname);
@@ -457,7 +456,8 @@ Same as the I<only_address> constructor option but applied per-call.
 
 sub format_address {
     my $self          = shift;
-    my $rh_components = clone(shift) || return;
+    my $rh_input = shift || return;
+    my $rh_components = { %$rh_input };  # make a copy
     my $rh_options    = shift        || {};
 
     # 1. make sure empty at the beginning
@@ -650,8 +650,9 @@ sub format_address {
         $rh_components = $self->_abbreviate($rh_components);
     }
 
-    # 9. prepare the template
-    $template_text = $self->_replace_template_lambdas($template_text);
+    # 9. prepare the template (and cache it)
+    $template_text = $self->{_lambda_cache}{$template_text}
+        //= $self->_replace_template_lambdas($template_text);
 
     # 10. compiled the template
     my $compiled_template = $self->{compiled_template_cache}{$template_text}
@@ -1151,6 +1152,7 @@ sub _replace_template_lambdas {
 sub _evaluate_template_lamdas {
     my $self = shift;
     my $text = shift;
+    return $text if (index($text, 'FIRSTSTART') < 0);  # only do regex if needed
     $text =~ s!FIRSTSTART\s*(.+?)\s*FIRSTEND!_select_first($1)!seg;
     return $text;
 }
